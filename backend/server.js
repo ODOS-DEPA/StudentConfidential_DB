@@ -2,6 +2,7 @@
 import express from "express";
 import dotenv from 'dotenv'
 import studentrouter from "./Routes/students.js";
+import DatabaseHandler from "./Routes/DatabaseHandler.js";
 dotenv.config({ path: '../.env' });
 
 
@@ -9,6 +10,7 @@ dotenv.config({ path: '../.env' });
 const app = express();
 app.use(express.json());
 app.use('/students', studentrouter);
+app.use("/DataUpload",DatabaseHandler);
 
 const HOST = process.env.HOST ;
 
