@@ -17,10 +17,6 @@ COPY ./backend /app/backend/
 # 6. ติดตั้ง Dependencies
 RUN npm install 
 
-
-# 8. บอก Port ที่จะใช้
-EXPOSE 3001
-
 # 9. คำสั่งสำหรับรันเซิร์ฟเวอร์
 #CMD ["node", "server.js"]
 CMD ["node", "server.js"]
