@@ -1,0 +1,10 @@
+# ไม่ต้องเอา node_modules จากเครื่องเราเข้าไป
+node_modules
+**/node_modules
+
+
+# ไฟล์ของ Git และ Docker เอง
+.git
+.gitignore
+Dockerfile
+docker-compose.yml

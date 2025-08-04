@@ -1,0 +1,10 @@
+package.json ที่เป็นตัว config เวอร์ชั้นของ library นั้นๆ เราแยกกันระหว่าง frontend/backend
+แต่ "node_module" ใช้จากที่เดียวกัน
+------------------------------------
+วิธีที่จะ ติดตั้ง library/dependencies
+ฺBeckend/server : npm install <NAME DEPENDENCIES> --workspace=<ชื่อใน package.json ของ backend>
+Frontend/WebApp : npm install <NAME DEPENDENCIES> --workspace=<ชื่อใน package.json ของ frontend>
+------------------------------------
+วิธีรัน 
+รันพร้อมกันเลยคือ "npm run dev"
+รันแยกคือ npm run dev --workspace=<ชื่อใน package.json ของ frontend>

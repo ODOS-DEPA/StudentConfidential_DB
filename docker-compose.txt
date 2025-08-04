@@ -1,0 +1,19 @@
+# version: '3.8'  <-- บรรทัดนี้ไม่จำเป็นแล้วใน Docker Compose เวอร์ชันใหม่ๆ ลบออกได้เลย
+
+services:
+  backend:
+    build:
+      # context ต้องเป็น root ( . ) เพื่อให้ Dockerfile เข้าถึงไฟล์ .env ได้
+      context: .
+      # ระบุ path ไปยัง Dockerfile ที่อยู่ในโฟลเดอร์ backend
+      dockerfile: ./backend/Dockerfile
+    ports:
+      - "3000:3000"
+    networks:
+      - mynetwork
+
+# --- ส่วนที่เพิ่มเข้ามาเพื่อแก้ไข Error ---
+# ประกาศ network ที่จะใช้ในโปรเจกต์นี้
+networks:
+  mynetwork:
+    driver: bridge
