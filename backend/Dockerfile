@@ -17,6 +17,7 @@ COPY ./backend /app/backend/
 # 6. ติดตั้ง Dependencies
 RUN npm install 
 
+
 # 9. คำสั่งสำหรับรันเซิร์ฟเวอร์
 #CMD ["node", "server.js"]
 CMD ["node", "server.js"]
