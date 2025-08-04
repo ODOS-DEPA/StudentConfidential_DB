@@ -1,0 +1,3 @@
+ \connect adminOdos@odos2-mysql.czavqmfbxgsa.ap-southeast-1.rds.amazonaws.com:3306
+-----
+Odos-depa1234_db
