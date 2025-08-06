@@ -56,33 +56,57 @@ DatabaseHandler.post('/', upload.single('file'), async (req, res) => {
 });
 
 DatabaseHandler.post('/confirmUpload', async (req, res) => {
-  const Isconfirm = req.body;  // The posted JSON data
-  //console.log('Received data:', receivedData);
-  if (Isconfirm.confirm){
-    for(let i in DataReader){
+  const Isconfirm = req.body;
+  if (Isconfirm.confirm) {
+    for (let i in DataReader) {
+      const studentId = DataReader[i][header_DB.Header_1];
 
-        //console.log(DataReader[i][header_DB.Header_1])
-        
-        let [rows] = await sql.query('SELECT * FROM StudentConfidential WHERE StudentID = ?', [DataReader[i][header_DB.Header_1]]);
-        if(rows.length >0 ){
-            let index = []; 
-            let header_DB_values = Object.values(header_DB) ; let row_header_keys = Object.keys(rows[0]);
-            console.log(header_DB_values) ;
-            console.log("----");
-            console.log(row_header_keys) ;
-            // FOR loop check update
-            //UPDATE
-            console.log("1");
-            console.log(index);
-        }else{
-            //INSERT
-            console.log("0");
+      // 1. Check if student exists
+      const [rows] = await sql.query(
+        'SELECT * FROM StudentConfidential WHERE StudentID = ?',
+        [studentId]
+      );
+
+      if (rows.length > 0) {
+        //Prepare updates from DataReader only where values exist
+        const updates = [];
+        const values = [];
+
+        for (let key in header_DB) {
+          const columnName = header_DB[key];
+          if (columnName === header_DB.Header_1) continue; // Skip StudentID
+
+          const value = DataReader[i][columnName];
+          if (value !== undefined) {
+            updates.push(`${columnName} = ?`);
+            values.push(value);
+          }
         }
+
+        if (updates.length > 0) {
+          values.push(studentId); // for WHERE
+          await sql.query(
+            `UPDATE StudentConfidential SET ${updates.join(', ')} WHERE StudentID = ?`,
+            values
+          );
+        }
+        console.log(`Updated: ${studentId}`);
+      } else {
+        //INSERT new row if StudentID not found
+        const columns = Object.values(header_DB);
+        const values = columns.map(col => DataReader[i][col] ?? null); // fallback to null
+
+        const placeholders = columns.map(() => '?').join(', ');
+        await sql.query(
+          `INSERT INTO StudentConfidential (${columns.join(', ')}) VALUES (${placeholders})`,
+          values
+        );
+        console.log(`Inserted: ${studentId}`);
+      }
     }
   }
-  // Respond back
-  res.json({ message: 'Data received successfully'});
-});
 
+  res.json({ message: 'Data received successfully' });
+});
 
 export default DatabaseHandler;
