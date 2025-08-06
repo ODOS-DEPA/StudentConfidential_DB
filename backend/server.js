@@ -8,6 +8,16 @@ dotenv.config({ path: '../.env' });
 
 // Create an instance of an Express application
 const app = express();
+
+// Allow CORS from all origins (for development)
+app.use(cors());
+
+// หรือ allow เฉพาะ frontend
+// app.use(cors({
+//   origin: 'http://localhost:5173'
+// }));
+
+
 app.use(express.json());
 app.use('/students', studentrouter);
 app.use("/DataUpload",DatabaseHandler);
