@@ -1,6 +1,7 @@
 
 import express from "express";
-import dotenv from 'dotenv'
+import dotenv from 'dotenv';
+import cors from 'cors';
 import studentrouter from "./Routes/students.js";
 import DatabaseHandler from "./Routes/DatabaseHandler.js";
 dotenv.config({ path: '../.env' });
