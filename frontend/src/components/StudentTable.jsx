@@ -308,7 +308,7 @@ const StudentTable = () => {
 
   // Fetch student data
   useEffect(() => {
-    axios.get('http://47.129.238.41/students/all')
+    axios.get('https://nodomain.space/students/all')
       .then(res => {
         const data = res.data || [];
         setStudents(data);
