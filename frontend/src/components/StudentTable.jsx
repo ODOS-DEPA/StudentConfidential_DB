@@ -372,14 +372,14 @@ const StudentTable = () => {
   // Columns that need interpretation
   const shouldTransform = (key) => {
     const norm = key.trim().toLowerCase();
-    return norm.startsWith("stage") || norm === "status";
+    return norm.startsWith("stage") || norm.startsWith("keytoken") || norm.startsWith("status");
   };
 
   const formatValue = (value) => {
     switch (value) {
       case 1: return "Pass";
       case 0: return "Fail";
-      case null:
+      case null: return "-";
       case undefined: return "–";
       default: return value;
     }

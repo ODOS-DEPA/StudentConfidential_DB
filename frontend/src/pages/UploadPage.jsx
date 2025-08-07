@@ -245,6 +245,245 @@
 //add import statements for toast notififications instead of alert boxes and preview data for uploaded file and simulated database merge
 //also added _status field to indicate new, updated, or untouched rows, such that
 //yellow for updated, green for new, and gray for untouched
+// import React, { useState } from 'react';
+// import axios from 'axios';
+// import confetti from 'canvas-confetti';
+// import { ToastContainer, toast } from 'react-toastify';
+// import 'react-toastify/dist/ReactToastify.css';
+
+// const UploadPage = () => {
+//   const [file, setFile] = useState(null);
+//   const [previewData, setPreviewData] = useState([]);
+//   const [mergedPreview, setMergedPreview] = useState([]);
+//   const [uploaded, setUploaded] = useState(false);
+//   const [confirming, setConfirming] = useState(false);
+
+//   const handleFileChange = (e) => {
+//     setFile(e.target.files[0]);
+//     setPreviewData([]);
+//     setMergedPreview([]);
+//     setUploaded(false);
+//   };
+
+//   const handleUpload = async () => {
+//     if (!file) return toast.error("❌ Please select a file first.");
+//     if (file.type !== "text/csv" && !file.name.endsWith(".csv")) {
+//       return toast.error("❌ Only CSV files are allowed.");
+//     }
+
+//     const formData = new FormData();
+//     formData.append('file', file);
+
+//     try {
+//       const res = await axios.post('http://47.129.238.41/DataUpload', formData);
+//       const preview = res.data.rows || [];
+//       setPreviewData(preview);
+
+//       const dbRes = await axios.get('http://47.129.238.41/students/all');
+//       const currentDB = dbRes.data || dbRes.data.rows || [];
+
+//       const merged = simulateMerge(currentDB, preview);
+//       setMergedPreview(merged);
+
+//       setUploaded(true);
+//       toast.success("✅ File previewed successfully!", {
+//         position: "top-center",
+//         autoClose: 2000,
+//         theme: "colored"
+//       });
+//     } catch (error) {
+//       console.error("Upload failed:", error.response?.data || error.message);
+//       toast.error("❌ Failed to preview the file.", {
+//         position: "top-center",
+//         autoClose: 3000,
+//         theme: "colored"
+//       });
+//     }
+//   };
+
+//   const normalize = (val) => {
+//     if (val === null || val === undefined) return '';
+//     return String(val).trim();
+//   };
+
+//   const simulateMerge = (dbRows, previewRows) => {
+//     const dbMap = new Map(dbRows.map(row => [row.StudentID, row]));
+//     const previewMap = new Map(previewRows.map(row => [row.StudentID, row]));
+
+//     const combined = [];
+
+//     // Process preview rows first
+//     for (const previewRow of previewRows) {
+//       const dbRow = dbMap.get(previewRow.StudentID);
+
+//       if (!dbRow) {
+//         combined.push({ ...previewRow, _source: 'preview', _status: 'new' });
+//       } else {
+//         let isChanged = false;
+//         for (const key of Object.keys(previewRow)) {
+//           if (key === 'StudentID') continue;
+//           const dbVal = normalize(dbRow[key]);
+//           const previewVal = normalize(previewRow[key]);
+//           if (dbVal !== previewVal) {
+//             isChanged = true;
+//             break;
+//           }
+//         }
+//         combined.push({
+//           ...previewRow,
+//           _source: 'preview',
+//           _status: isChanged ? 'updated' : 'untouched'
+//         });
+//       }
+//     }
+
+//     // Add database rows not in preview
+//     for (const dbRow of dbRows) {
+//       if (!previewMap.has(dbRow.StudentID)) {
+//         combined.push({ ...dbRow, _source: 'database', _status: 'untouched' });
+//       }
+//     }
+
+//     return combined;
+//   };
+
+//   const handleConfirm = async () => {
+//     setConfirming(true);
+//     try {
+//       await axios.post('http://47.129.238.41/DataUpload/confirmUpload', {
+//         confirm: true
+//       });
+
+//       confetti({
+//         particleCount: 150,
+//         spread: 100,
+//         origin: { y: 0.4 }
+//       });
+
+//       toast.success("✅ Data successfully inserted/updated!", {
+//         position: "top-center",
+//         autoClose: 3000,
+//         theme: "colored"
+//       });
+
+//       setFile(null);
+//       setPreviewData([]);
+//       setMergedPreview([]);
+//       setUploaded(false);
+//     } catch (error) {
+//       console.error("Confirm failed:", error);
+//       toast.error("❌ Failed to confirm upload.", {
+//         position: "top-center",
+//         autoClose: 3000,
+//         theme: "colored"
+//       });
+//     } finally {
+//       setConfirming(false);
+//     }
+//   };
+
+//   const renderTable = (data, title, highlightStatus = false) => (
+//     <>
+//       <h3 style={{ marginTop: '2rem' }}>{title}</h3>
+//       <div
+//         style={{
+//           overflowX: 'auto',
+//           maxHeight: '400px',
+//           marginBottom: '1rem',
+//           boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+//           borderRadius: '8px'
+//         }}
+//       >
+//         <table
+//           cellPadding="8"
+//           style={{
+//             borderCollapse: 'collapse',
+//             width: '100%',
+//             fontFamily: 'Arial, sans-serif',
+//             fontSize: '0.9rem',
+//             color: '#333',
+//             backgroundColor: '#fff',
+//             border: '1px solid #ddd'
+//           }}
+//         >
+//           <thead>
+//             <tr style={{ backgroundColor: '#f4f6f8', fontWeight: 'bold', borderBottom: '2px solid #ddd' }}>
+//               {Object.keys(data[0]).map((key, index) => (
+//                 <th key={index} style={{ padding: '10px' }}>{key}</th>
+//               ))}
+//             </tr>
+//           </thead>
+//           <tbody>
+//             {data.map((row, i) => {
+//               const status = row._status;
+//               const bgColor =
+//                 status === 'new' ? '#e6ffe6' :
+//                 status === 'updated' ? '#fffbe6' :
+//                 status === 'untouched' ? '#f0f0f0' :
+//                 i % 2 === 0 ? '#ffffff' : '#f9f9f9';
+
+//               return (
+//                 <tr
+//                   key={i}
+//                   style={{
+//                     backgroundColor: bgColor,
+//                     borderBottom: '1px solid #eee',
+//                     transition: 'background 0.3s'
+//                   }}
+//                   onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#e6f7ff')}
+//                   onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = bgColor)}
+//                 >
+//                   {Object.entries(row).map(([key, value], j) => (
+//                     <td key={j} style={{ padding: '8px', textAlign: 'center' }}>
+//                       {key === '_status'
+//                         ? value === 'new'
+//                           ? '🆕 New'
+//                           : value === 'updated'
+//                           ? '✏️ Updated'
+//                           : value === 'untouched'
+//                           ? '⚪ Untouched'
+//                           : ''
+//                         : value ?? '–'}
+//                     </td>
+//                   ))}
+//                 </tr>
+//               );
+//             })}
+//           </tbody>
+//         </table>
+//       </div>
+//     </>
+//   );
+
+//   return (
+//     <div style={{ padding: '2rem' }}>
+//       <h2>Upload Student CSV</h2>
+
+//       <input type="file" accept=".csv" onChange={handleFileChange} />
+//       <button onClick={handleUpload} style={{ marginLeft: '10px' }}>
+//         Upload
+//       </button>
+
+//       {uploaded && previewData.length > 0 && (
+//         <>
+//           {renderTable(previewData, "📄 Uploaded File Preview")}
+//           {mergedPreview.length > 0 && renderTable(mergedPreview, "📊 Simulated Database After Merge", true)}
+
+//           <button onClick={handleConfirm} disabled={confirming}>
+//             {confirming ? "Confirming..." : "Confirm Upload"}
+//           </button>
+//         </>
+//       )}
+
+//       <ToastContainer />
+//     </div>
+//   );
+// };
+
+// export default UploadPage;
+
+
+// add highlights on which columns are being updated for the rows that are being updated
 import React, { useState } from 'react';
 import axios from 'axios';
 import confetti from 'canvas-confetti';
@@ -312,32 +551,33 @@ const UploadPage = () => {
 
     const combined = [];
 
-    // Process preview rows first
     for (const previewRow of previewRows) {
       const dbRow = dbMap.get(previewRow.StudentID);
 
       if (!dbRow) {
         combined.push({ ...previewRow, _source: 'preview', _status: 'new' });
       } else {
-        let isChanged = false;
+        const changedFields = [];
+
         for (const key of Object.keys(previewRow)) {
           if (key === 'StudentID') continue;
           const dbVal = normalize(dbRow[key]);
           const previewVal = normalize(previewRow[key]);
           if (dbVal !== previewVal) {
-            isChanged = true;
-            break;
+            changedFields.push(key);
+            changedFields.push(",");
           }
         }
+
         combined.push({
           ...previewRow,
           _source: 'preview',
-          _status: isChanged ? 'updated' : 'untouched'
+          _status: changedFields.length > 0 ? 'updated' : 'untouched',
+          _changedFields: changedFields
         });
       }
     }
 
-    // Add database rows not in preview
     for (const dbRow of dbRows) {
       if (!previewMap.has(dbRow.StudentID)) {
         combined.push({ ...dbRow, _source: 'database', _status: 'untouched' });
@@ -352,12 +592,6 @@ const UploadPage = () => {
     try {
       await axios.post('http://47.129.238.41/DataUpload/confirmUpload', {
         confirm: true
-      });
-
-      confetti({
-        particleCount: 150,
-        spread: 100,
-        origin: { y: 0.4 }
       });
 
       toast.success("✅ Data successfully inserted/updated!", {
@@ -433,19 +667,30 @@ const UploadPage = () => {
                   onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#e6f7ff')}
                   onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = bgColor)}
                 >
-                  {Object.entries(row).map(([key, value], j) => (
-                    <td key={j} style={{ padding: '8px', textAlign: 'center' }}>
-                      {key === '_status'
-                        ? value === 'new'
-                          ? '🆕 New'
-                          : value === 'updated'
-                          ? '✏️ Updated'
-                          : value === 'untouched'
-                          ? '⚪ Untouched'
-                          : ''
-                        : value ?? '–'}
-                    </td>
-                  ))}
+                  {Object.entries(row).map(([key, value], j) => {
+                    const isChanged = row._status === 'updated' && row._changedFields?.includes(key);
+                    const cellStyle = {
+                      padding: '8px',
+                      textAlign: 'center',
+                      backgroundColor: isChanged ? '#fff2cc' : undefined,
+                      fontWeight: isChanged ? 'bold' : undefined,
+                      border: '1px solid #eee'
+                    };
+
+                    return (
+                      <td key={j} style={cellStyle}>
+                        {key === '_status'
+                          ? value === 'new'
+                            ? '🆕 New'
+                            : value === 'updated'
+                            ? '✏️ Updated'
+                            : value === 'untouched'
+                            ? '⚪ Untouched'
+                            : ''
+                          : value ?? '–'}
+                      </td>
+                    );
+                  })}
                 </tr>
               );
             })}
@@ -461,7 +706,7 @@ const UploadPage = () => {
 
       <input type="file" accept=".csv" onChange={handleFileChange} />
       <button onClick={handleUpload} style={{ marginLeft: '10px' }}>
-        Upload
+        Preview
       </button>
 
       {uploaded && previewData.length > 0 && (
