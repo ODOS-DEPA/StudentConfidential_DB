@@ -2,10 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import SearchBar from './SearchBar';
 import path from 'path'
-import dotenv from 'dotenv'
 
-// Load .env from one directory above the current file
-dotenv.config({ path: path.resolve(__dirname, '../../.env') })
 
 const StudentTable = () => {
   const [students, setStudents] = useState([]);

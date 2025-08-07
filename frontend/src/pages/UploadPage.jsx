@@ -252,10 +252,6 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 import path from 'path'
-import dotenv from 'dotenv'
-
-// Load .env from one directory above the current file
-dotenv.config({ path: path.resolve(__dirname, '../../.env') })
 
 const UploadPage = () => {
   const [file, setFile] = useState(null);
