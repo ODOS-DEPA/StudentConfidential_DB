@@ -251,8 +251,6 @@ import confetti from 'canvas-confetti';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-import path from 'path'
-
 const UploadPage = () => {
   const [file, setFile] = useState(null);
   const [previewData, setPreviewData] = useState([]);

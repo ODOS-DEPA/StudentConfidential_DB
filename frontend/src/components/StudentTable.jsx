@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import SearchBar from './SearchBar';
-import path from 'path'
+
 
 
 const StudentTable = () => {
