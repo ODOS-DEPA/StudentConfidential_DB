@@ -275,11 +275,11 @@ const UploadPage = () => {
     formData.append('file', file);
 
     try {
-      const res = await axios.post('https://nodomain.space/DataUpload', formData);
+      const res = await axios.post('http://47.129.238.41/DataUpload', formData);
       const preview = res.data.rows || [];
       setPreviewData(preview);
 
-      const dbRes = await axios.get('https://nodomain.space/students/all');
+      const dbRes = await axios.get('http://47.129.238.41/students/all');
       const currentDB = dbRes.data || dbRes.data.rows || [];
 
       const merged = simulateMerge(currentDB, preview);
