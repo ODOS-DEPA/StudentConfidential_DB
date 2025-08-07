@@ -251,6 +251,12 @@ import confetti from 'canvas-confetti';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
+import path from 'path'
+import dotenv from 'dotenv'
+
+// Load .env from one directory above the current file
+dotenv.config({ path: path.resolve(__dirname, '../../.env') })
+
 const UploadPage = () => {
   const [file, setFile] = useState(null);
   const [previewData, setPreviewData] = useState([]);
@@ -275,11 +281,11 @@ const UploadPage = () => {
     formData.append('file', file);
 
     try {
-      const res = await axios.post('http://47.129.238.41/DataUpload', formData);
+      const res = await axios.post(`${process.env.domainName || "http://0.0.0.0"}/DataUpload`, formData);
       const preview = res.data.rows || [];
       setPreviewData(preview);
 
-      const dbRes = await axios.get('http://47.129.238.41/students/all');
+      const dbRes = await axios.get(`${process.env.domainName || "http://0.0.0.0"}/students/all`);
       const currentDB = dbRes.data || dbRes.data.rows || [];
 
       const merged = simulateMerge(currentDB, preview);
@@ -350,7 +356,7 @@ const UploadPage = () => {
   const handleConfirm = async () => {
     setConfirming(true);
     try {
-      await axios.post('http://47.129.238.41/DataUpload/confirmUpload', {
+      await axios.post(`${process.env.domainName || "http://0.0.0.0"}/DataUpload/confirmUpload`, {
         confirm: true
       });
 
