@@ -15,7 +15,7 @@ const StudentTable = () => {
 
   // Fetch student data
   useEffect(() => {
-    axios.get(`${process.env.domainName || "http://0.0.0.0"}/students/all`)
+    axios.get(`${import.meta.env.domainName || "http://0.0.0.0"}/students/all`)
       .then(res => {
         const data = res.data || [];
         setStudents(data);
