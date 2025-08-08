@@ -15,6 +15,7 @@ app.use(
   cors({
     origin: [
       "http://127.0.0.1:3000",
+      "http://localhost:3000",
       process.env.VITE_DOMAIN_NAME
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
