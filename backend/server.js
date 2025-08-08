@@ -16,6 +16,7 @@ app.use(
     origin: [
       "http://127.0.0.1:3000",
       "http://localhost:3000",
+      "http://localhost:443",
       process.env.VITE_DOMAIN_NAME
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
@@ -23,11 +24,6 @@ app.use(
     credentials: true,
   })
 );
-
-// หรือ allow เฉพาะ frontend
-// app.use(cors({
-//   origin: 'http://localhost:5173'
-// }));
 
 
 app.use(express.json());
