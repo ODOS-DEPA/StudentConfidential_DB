@@ -3,7 +3,7 @@ import express from "express";
 import dotenv from 'dotenv';
 import cors from 'cors';
 import studentrouter from "./Routes/students.js";
-import DatabaseHandler from "./Routes/DatabaseHandler.js";
+import checkstatus_DB from "./Routes/checkstatus_DB.js";
 dotenv.config({ path: '../.env' });
 
 
@@ -27,7 +27,7 @@ app.use(
 
 app.use(express.json());
 app.use('/students', studentrouter);
-app.use("/DataUpload",DatabaseHandler);
+app.use("/DataUpload",checkstatus_DB);
 
 const HOST = process.env.HOST ;
 

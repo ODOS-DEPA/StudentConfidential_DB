@@ -25,11 +25,11 @@ let header_DB = {
 }
 
 let DataReader; 
-const DatabaseHandler = express.Router();
+const checkstatus_DB = express.Router();
 const upload = multer({ storage: multer.memoryStorage() }); // เก็บไฟล์ใน RAM (buffer)
 
 // POST รับไฟล์ Excel ผ่าน field 'file'
-DatabaseHandler.post('/', upload.single('file'), async (req, res) => {
+checkstatus_DB.post('/', upload.single('file'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
@@ -55,7 +55,7 @@ DatabaseHandler.post('/', upload.single('file'), async (req, res) => {
   }
 });
 
-DatabaseHandler.post('/confirmUpload', async (req, res) => {
+checkstatus_DB.post('/confirmUpload', async (req, res) => {
   const Isconfirm = req.body;
   if (Isconfirm.confirm) {
     for (let i in DataReader) {
@@ -109,4 +109,4 @@ DatabaseHandler.post('/confirmUpload', async (req, res) => {
   res.json({ message: 'Data received successfully' });
 });
 
-export default DatabaseHandler;
+export default checkstatus_DB;
