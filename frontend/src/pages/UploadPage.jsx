@@ -275,11 +275,11 @@
 //     formData.append('file', file);
 
 //     try {
-//       const res = await axios.post('http://47.129.238.41/DataUpload', formData);
+//       const res = await axios.post(`${import.meta.env.VITE_DOMAIN_NAME || "http://0.0.0.0"}/DataUpload`, formData);
 //       const preview = res.data.rows || [];
 //       setPreviewData(preview);
 
-//       const dbRes = await axios.get('http://47.129.238.41/students/all');
+//       const dbRes = await axios.get(`${import.meta.env.VITE_DOMAIN_NAME || "http://0.0.0.0"}/students/all`);
 //       const currentDB = dbRes.data || dbRes.data.rows || [];
 
 //       const merged = simulateMerge(currentDB, preview);
@@ -350,7 +350,7 @@
 //   const handleConfirm = async () => {
 //     setConfirming(true);
 //     try {
-//       await axios.post('http://47.129.238.41/DataUpload/confirmUpload', {
+//       await axios.post(`${import.meta.env.VITE_DOMAIN_NAME || "http://0.0.0.0"}/DataUpload/confirmUpload`, {
 //         confirm: true
 //       });
 
@@ -481,9 +481,6 @@
 // };
 
 // export default UploadPage;
-
-
-// add highlights on which columns are being updated for the rows that are being updated
 import React, { useState } from 'react';
 import axios from 'axios';
 import confetti from 'canvas-confetti';
@@ -496,7 +493,7 @@ const UploadPage = () => {
   const [mergedPreview, setMergedPreview] = useState([]);
   const [uploaded, setUploaded] = useState(false);
   const [confirming, setConfirming] = useState(false);
-
+  const domain = import.meta.env.VITE_DOMAIN_NAME?.trim() || "http://0.0.0.0";
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
     setPreviewData([]);
@@ -506,19 +503,19 @@ const UploadPage = () => {
 
   const handleUpload = async () => {
     if (!file) return toast.error("❌ Please select a file first.");
-    if (file.type !== "text/csv" && !file.name.endsWith(".csv")) {
-      return toast.error("❌ Only CSV files are allowed.");
+    if (file.type !== "text/csv" && !file.name.endsWith(".csv") && !file.name.endsWith(".xlsx") && !file.name.endsWith(".xlsm") && !file.name.endsWith(".xlsb") && !file.name.endsWith(".xltx")) {
+      return toast.error("❌ Only CSV files or Excel files are allowed.");
     }
 
     const formData = new FormData();
     formData.append('file', file);
 
     try {
-      const res = await axios.post('http://47.129.238.41/DataUpload', formData);
+      const res = await axios.post(`${domain}/DataUpload`, formData);
       const preview = res.data.rows || [];
       setPreviewData(preview);
 
-      const dbRes = await axios.get('http://47.129.238.41/students/all');
+      const dbRes = await axios.get(`${domain}/students/all`);
       const currentDB = dbRes.data || dbRes.data.rows || [];
 
       const merged = simulateMerge(currentDB, preview);
@@ -590,7 +587,7 @@ const UploadPage = () => {
   const handleConfirm = async () => {
     setConfirming(true);
     try {
-      await axios.post('http://47.129.238.41/DataUpload/confirmUpload', {
+      await axios.post(`${domain}/DataUpload/confirmUpload`, {
         confirm: true
       });
 

@@ -11,7 +11,17 @@ dotenv.config({ path: '../.env' });
 const app = express();
 
 // Allow CORS from all origins (for development)
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "http://127.0.0.1:3000",
+      process.env.VITE_DOMAIN_NAME
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  })
+);
 
 // หรือ allow เฉพาะ frontend
 // app.use(cors({
