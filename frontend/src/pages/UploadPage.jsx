@@ -734,12 +734,6 @@ import confetti from 'canvas-confetti';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-import React, { useState, useMemo, useCallback } from "react";
-import axios from "axios";
-import { FixedSizeList as List } from "react-window";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-
 const normalize = (val) => (val == null ? "" : String(val).trim());
 
 const simulateMerge = (dbRows, previewRows) => {
