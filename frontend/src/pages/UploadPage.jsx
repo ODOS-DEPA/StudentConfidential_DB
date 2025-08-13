@@ -709,8 +709,6 @@ const UploadPage = () => {
       {uploaded && previewData.length > 0 && (
         <>
           {renderTable(previewData, "📄 Uploaded File Preview")}
-          {mergedPreview.length > 0 && renderTable(mergedPreview, "📊 Simulated Database After Merge", true)}
-
           <button onClick={handleConfirm} disabled={confirming}>
             {confirming ? "Confirming..." : "Confirm Upload"}
           </button>
