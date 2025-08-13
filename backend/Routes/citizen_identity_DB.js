@@ -40,57 +40,110 @@ citizen_identity_DB.post('/', upload.single('file'), async (req, res) => {
 // POST รับไฟล์ Excel ผ่าน field 'file'
 citizen_identity_DB.post('/confirmUpload', async (req, res) => {
   const Isconfirm = req.body;
-  if (Isconfirm.confirm) {
-    for (let i in DataReader) {
-      const studentId = DataReader[i][header_DB.Header_1];
-
-      // 1. Check if student exists
-      const [rows] = await sql.query(
-        'SELECT * FROM citizen_identity WHERE StudentID = ?',
-        [studentId]
-      );
-
-      if (rows.length > 0) {
-        //Prepare updates from DataReader only where values exist
-        const updates = [];
-        const values = [];
-
-        for (let key in header_DB) {
-          const columnName = header_DB[key];
-          if (columnName === header_DB.Header_1) continue; // Skip StudentID
-
-          const value = DataReader[i][columnName];
-          if (value !== undefined) {
-            updates.push(`${columnName} = ?`);
-            values.push(value);
-          }
-        }
-
-        if (updates.length > 0) {
-          values.push(studentId); // for WHERE
-          await sql.query(
-            `UPDATE citizen_identity  SET ${updates.join(', ')} WHERE StudentID = ?`,
-            values
-          );
-        }
-        console.log(`Updated(CitizenID) for StudentID => ${studentId}`);
-      } else {
-        //INSERT new row if StudentID not found
-        const columns = Object.values(header_DB);
-        const values = columns.map(col => DataReader[i][col] ?? null); // fallback to null
-
-        const placeholders = columns.map(() => '?').join(', ');
-        await sql.query(
-          `INSERT INTO citizen_identity (${columns.join(', ')}) VALUES (${placeholders})`,
-          values
-        );
-        console.log(`Inserted (CitizenID) for StudentID => ${studentId}`);
-      }
-    }
+  if (!Isconfirm.confirm) {
+    return res.status(400).json({ error: 'Confirm not true' });
   }
 
-  res.json({ message: 'Data received successfully' });
+  try {
+    if (!DataReader || DataReader.length === 0) {
+      return res.status(400).json({ error: 'No data to upload' });
+    }
+
+    const columns = Object.values(header_DB);
+    const placeholders = columns.map(() => '?').join(',');
+    const batchSize = 1000;
+
+    const allStudentIDs = DataReader.map(row => row.StudentID);
+    const [existingRows] = await sql.query(
+      `SELECT StudentID FROM citizen_identity WHERE StudentID IN (?)`,
+      [allStudentIDs]
+    );
+    const existingIDs = new Set(existingRows.map(r => r.StudentID));
+
+    const insertRows = [];
+    const updateRows = [];
+
+    for (let row of DataReader) {
+      if (existingIDs.has(row.StudentID)) {
+        updateRows.push(row);
+      } else {
+        insertRows.push(row);
+      }
+    }
+
+    console.log(`Total insert: ${insertRows.length}, Total update: ${updateRows.length}`);
+    console.log('Insert StudentID:', insertRows.map(r => r.StudentID));
+    console.log('Update StudentID:', updateRows.map(r => r.StudentID));
+
+    const startTime = Date.now(); // เริ่มจับเวลา
+
+    // Batch insert
+    for (let i = 0; i < insertRows.length; i += batchSize) {
+      const batchStart = Date.now();
+      const batch = insertRows.slice(i, i + batchSize);
+      const allValues = batch.map(row => columns.map(col => row[col] ?? null));
+      const sqlQuery = `INSERT INTO citizen_identity (${columns.join(',')}) VALUES ${allValues.map(() => `(${placeholders})`).join(',')}`;
+      await sql.query(sqlQuery, allValues.flat());
+      console.log(`Inserted rows ${i + 1} to ${i + batch.length} | Time: ${Date.now() - batchStart} ms`);
+    }
+
+    // Batch update
+    for (let i = 0; i < updateRows.length; i += batchSize) {
+      const batchStart = Date.now();
+      const batch = updateRows.slice(i, i + batchSize);
+
+      let updateClauses = {}; // เก็บ {col: "CASE ... END"}
+      const studentIDs = batch.map(r => r.StudentID);
+
+      // เตรียม CASE สำหรับแต่ละคอลัมน์
+      for (let col of columns) {
+        if (col === 'StudentID') continue; // ไม่อัปเดต StudentID
+
+        let caseSQL = `CASE StudentID`;
+        let hasUpdate = false;
+
+        for (let row of batch) {
+          if (row[col] !== undefined) {
+            caseSQL += ` WHEN '${row.StudentID}' THEN ${sql.escape(row[col])}`;
+            hasUpdate = true;
+          }
+        }
+        caseSQL += ` ELSE ${col} END`;
+
+        if (hasUpdate) {
+          updateClauses[col] = caseSQL;
+        }
+      }
+
+      if (Object.keys(updateClauses).length > 0) {
+        const updateSQL = Object.entries(updateClauses)
+          .map(([col, caseSQL]) => `${col} = ${caseSQL}`)
+          .join(', ');
+
+        const sqlQuery = `
+          UPDATE citizen_identity
+          SET ${updateSQL}
+          WHERE StudentID IN (${studentIDs.map(id => sql.escape(id)).join(',')})
+        `;
+
+        await sql.query(sqlQuery);
+        console.log(`✅ Updated ${batch.length} rows (IDs: ${studentIDs.join(', ')}) | Time: ${Date.now() - batchStart} ms`);
+      }
+    }
+
+
+    const totalTime = Date.now() - startTime;
+    console.log(`Total elapsed time: ${totalTime} ms`);
+
+    res.json({ message: `Inserted ${insertRows.length}, Updated ${updateRows.length}, Total time: ${totalTime} ms` });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to process data' });
+  }
 });
 
 
+
 export default citizen_identity_DB;
+

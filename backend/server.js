@@ -2,9 +2,10 @@
 import express from "express";
 import dotenv from 'dotenv';
 import cors from 'cors';
-import studentrouter from "./Routes/students.js";
+import studentrouter from "./Routes/checkstatus.js";
 import checkstatus_DB from "./Routes/checkstatus_DB.js";
 import citizen_identity_DB from "./Routes/citizen_identity_DB.js";
+import student_citizen_identity from "./Routes/student_citizen_identity.js";
 dotenv.config({ path: '../.env' });
 
 
@@ -29,7 +30,9 @@ app.use(
 app.use(express.json());
 app.use('/students', studentrouter);
 app.use("/DataUpload",checkstatus_DB);
-app.use("/citizenID",citizen_identity_DB);
+app.use("/citizenID",student_citizen_identity);
+app.use("/citizenID/upload",citizen_identity_DB);
+
 const HOST = process.env.HOST ;
 
 const PORT = process.env.PORT ;
