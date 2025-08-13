@@ -81,14 +81,14 @@ const UploadPage = () => {
     formData.append('file', file);
 
     try {
+      // ส่งไฟล์ไป server เพื่ออ่านไฟล์เท่านั้น
       const res = await axios.post(`${domain}/DataUpload`, formData);
       const preview = res.data.rows || [];
 
-      const dbRes = await axios.get(`${domain}/students/all`);
-      const currentDB = dbRes.data?.rows || dbRes.data || [];
+      // แค่ set previewData โดย tag ทุก row เป็น 'new' สำหรับ highlight
+      const previewWithStatus = preview.map(row => ({ ...row, _status: 'new' }));
 
-      const merged = simulateMerge(currentDB, preview);
-      setPreviewData(merged);
+      setPreviewData(previewWithStatus);
       setUploaded(true);
 
       toast.success("✅ File previewed successfully!", { position: "top-center", autoClose: 2000, theme: "colored" });
