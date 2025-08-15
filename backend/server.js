@@ -18,7 +18,7 @@ app.use(
     origin: [
       "http://127.0.0.1:3000",
       "http://localhost:3000",
-      process.env.VITE_DOMAIN_NAME
+      `${process.env.VITE_DOMAIN_NAME}:${process.env.OUTSIDE_FRONT_PORT}`
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
