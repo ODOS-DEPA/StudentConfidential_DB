@@ -19,7 +19,7 @@ services:
       dockerfile: ./backend/Dockerfile
     container_name: backend-DB
     ports:
-      - "80:80"
+      - "12345:80"
     networks:
       - mynetwork
 
