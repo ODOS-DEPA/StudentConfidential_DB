@@ -18,7 +18,8 @@ app.use(
     origin: [
       "http://127.0.0.1:3000",
       "http://localhost:3000",
-      `${process.env.VITE_DOMAIN_NAME}:${process.env.OUTSIDE_FRONT_PORT}`
+      //`${process.env.VITE_DOMAIN_NAME}:${process.env.OUTSIDE_FRONT_PORT}`,
+      "https://nodomain.space:8443",
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -42,4 +43,5 @@ console.log(`Attempting to start server on Port: ${PORT}`);
 
 app.listen(PORT, HOST, () => {
   console.log(`Server is running on http://${HOST}:${PORT}`);
+  console.log(`${process.env.VITE_DOMAIN_NAME}:${process.env.OUTSIDE_FRONT_PORT}`)
 });
