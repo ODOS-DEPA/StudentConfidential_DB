@@ -81,7 +81,6 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import StudentTable from './components/StudentTable';
 import UploadPage from './pages/UploadPage';
-import EditPage from './pages/EditPage';
 import logo from './assets/depa.jpg'; // replace with your logo path
 
 function App() {
@@ -116,7 +115,7 @@ function App() {
         <Routes>
           <Route path="/" element={<StudentTable />} />
           <Route path="/upload" element={<UploadPage />} />
-          <Route path="/edit" element={<EditPage />} />
+
         </Routes>
       </div>
     </Router>
