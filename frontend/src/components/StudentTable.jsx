@@ -1571,8 +1571,8 @@ const StudentTable = () => {
     // Handle stage1..stage8 (0/1/null strings)
     if (normKey.startsWith("stage")) {
       const strVal = String(value).trim();
-      if (strVal === "1") return "✅";
-      if (strVal === "0") return "❌";
+      if (strVal === "1" || strVal === "ผ่าน") return "✅";
+      if (strVal === "0" || strVal === "ไม่ผ่าน") return "❌";
       return "–";
     }
 
