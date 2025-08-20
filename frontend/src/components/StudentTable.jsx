@@ -1573,15 +1573,16 @@ const StudentTable = () => {
       const strVal = String(value).trim();
       if (strVal === "1" || strVal === "ผ่าน") return "✅";
       if (strVal === "0" || strVal === "ไม่ผ่าน") return "❌";
+      if (strVal === "รอดำเนินการ" || strVal === "pending" || strVal === "รอ" || strVal === "Pending") return "⏳";
       return "–";
     }
 
     // Handle currentStatus (boolean-like)
     if (normKey === "currentstatus") {
       const strVal = String(value).trim().toLowerCase();
-      if (strVal === "1" || strVal === "true") return "Pass";
-      if (strVal === "0" || strVal === "false") return "Fail";
-      return "–";
+      // if (strVal === "1" || strVal === "true") return "Pass";
+      // if (strVal === "0" || strVal === "false") return "Fail";
+      return strVal === null ? "–" : strVal;
     }
 
     // Fallback (just display raw)
