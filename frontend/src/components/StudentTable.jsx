@@ -1573,7 +1573,7 @@ const StudentTable = () => {
       const strVal = String(value).trim();
       if (strVal === "1" || strVal === "ผ่าน") return "✅";
       if (strVal === "0" || strVal === "ไม่ผ่าน") return "❌";
-      if (strVal === "รอดำเนินการ" || strVal === "pending" || strVal === "รอ" || strVal === "Pending") return "⏳";
+      if (strVal === "รอดำเนินการ" || strVal === "pending" || strVal === "รอ" || strVal === "Pending" || strVal === "ติดเงื่อนไข") return "⚠️";
       return "–";
     }
 

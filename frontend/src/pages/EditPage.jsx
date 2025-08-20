@@ -1332,28 +1332,29 @@ const EditPage = () => {
 
   // Set CurrentStatus based on stages
   const handleSetCurrentStatus = () => {
-    const updatedData = data.map((row) => {
-      for (let i = 1; i <= 8; i++) {
-        const stageValue = row[`stage${i}`];
-        if (stageValue === "รอดำเนินการ" || stageValue === "ไม่ผ่าน") {
-          return { ...row, currentStatus: i };
-        }
+  const updatedData = data.map((row) => {
+    for (let i = 1; i <= 8; i++) {
+      const stageValue = row[`stage${i}`];
+      if (stageValue && (stageValue === "รอดำเนินการ" || stageValue === "ติดเงื่อนไข" || stageValue === "ไม่ผ่าน")) {
+        return { ...row, currentStatus: i };
       }
-      // If all stages are 'ผ่าน'
-      return { ...row, currentStatus: 8 };
-    });
+    }
+    // If all stages are 'ผ่าน' or null/empty
+    return { ...row, currentStatus: 8 };
+  });
 
-    setData(updatedData);
+  setData(updatedData);
 
-    // Mark all rows as edited so Save All works
-    const updatedEditedRows = {};
-    updatedData.forEach((row) => {
-      updatedEditedRows[row.StudentID] = row;
-    });
-    setEditedRows(updatedEditedRows);
+  // Mark all rows as edited so Save All works
+  const updatedEditedRows = {};
+  updatedData.forEach((row) => {
+    updatedEditedRows[row.StudentID] = row;
+  });
+  setEditedRows(updatedEditedRows);
 
-    toast.success("✅ CurrentStatus updated for all students!");
-  };
+  toast.success("✅ CurrentStatus updated for all students!");
+};
+
 
   // Search filter
   const filteredData = data.filter((row) => {
