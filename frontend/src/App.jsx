@@ -109,7 +109,7 @@ function App() {
         <nav style={{ marginBottom: '20px' }}>
           <Link to="/" style={{ marginRight: '15px' }}>📋 View Students</Link>
           <Link to="/upload" style={{ marginRight: '15px' }}>⬆️ Upload Excel</Link>
-          <Link to="/edit">✏️ Edit Student</Link>
+          <Link to="/edit">✏️ Edit Students</Link>
         </nav>
 
         {/* Routes */}
