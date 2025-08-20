@@ -5186,6 +5186,330 @@
 
 // export default UploadPage;
 
+
+
+//latest version on changing currentstatus
+// import React, { useState } from 'react';
+// import axios from 'axios';
+// import { ToastContainer, toast } from 'react-toastify';
+// import 'react-toastify/dist/ReactToastify.css';
+
+// const UploadPage = () => {
+//   const [file, setFile] = useState(null);
+//   const [previewData, setPreviewData] = useState([]);
+//   const [uploaded, setUploaded] = useState(false);
+//   const [confirming, setConfirming] = useState(false);
+//   const [currentPage, setCurrentPage] = useState(1);
+//   const [searchTerm, setSearchTerm] = useState("");
+//   const [tableType, setTableType] = useState("checkstatus");
+//   const [statusFilter, setStatusFilter] = useState("all");
+
+//   const rowsPerPage = 50;
+//   const domain = import.meta.env.VITE_DOMAIN_NAME?.trim() || "http://0.0.0.0";
+
+//   const resetState = () => {
+//     setPreviewData([]);
+//     setUploaded(false);
+//     setCurrentPage(1);
+//     setSearchTerm("");
+//     setStatusFilter("all");
+//   };
+
+//   const handleFileChange = (e) => {
+//     const selectedFile = e.target.files[0];
+//     setFile(selectedFile);
+//     resetState();
+//   };
+
+//   const validateFile = (file) => {
+//     if (!file) return false;
+//     const allowedExtensions = ['csv', 'xlsx', 'xlsm', 'xlsb', 'xltx'];
+//     const ext = file.name.split('.').pop().toLowerCase();
+//     return allowedExtensions.includes(ext);
+//   };
+
+//   // Calculate currentStatus: 1-8 only
+//   const calculateCurrentStatus = (row) => {
+//     for (let i = 1; i <= 8; i++) {
+//       const stageKey = `stage${i}`;
+//       const val = row[stageKey];
+//       if (val === null || val === undefined || val === '' || val === 'รอดำเนินการ') {
+//         return i; // first pending stage
+//       }
+//       if (val === 'ไม่ผ่าน') {
+//         return i; // failed stage, stop here
+//       }
+//     }
+//     return 8; // all stages passed
+//   };
+
+//   const handleUpload = async () => {
+//     if (!file) return toast.error("❌ Please select a file first.");
+//     if (!validateFile(file)) return toast.error("❌ Only CSV or Excel files are allowed.");
+
+//     const formData = new FormData();
+//     formData.append('file', file);
+
+//     try {
+//       const uploadUrl =
+//         tableType === "checkstatus"
+//           ? `${domain}/DataUpload`
+//           : `${domain}/citizenID/upload`;
+
+//       const dbUrl =
+//         tableType === "checkstatus"
+//           ? `${domain}/students/all`
+//           : `${domain}/citizenID/all`;
+
+//       const idKey = "StudentID";
+
+//       const res = await axios.post(uploadUrl, formData);
+//       const uploadRows = res.data.rows || [];
+
+//       // Calculate currentStatus for preview
+//       const uploadWithStatus = uploadRows.map(r => ({
+//         ...r,
+//         currentStatus: calculateCurrentStatus(r),
+//       }));
+
+//       const dbRes = await axios.get(dbUrl);
+//       const dbRows = dbRes.data?.rows || dbRes.data || [];
+//       const dbMap = new Map(dbRows.map(r => [r[idKey], r]));
+
+//       const dbColumns = dbRows.length > 0 ? Object.keys(dbRows[0]) : Object.keys(uploadRows[0]);
+
+//       // Merge DB + Upload for preview
+//       const previewWithStatus = dbRows.map(dbRow => {
+//         const uploadRow = uploadWithStatus.find(r => r[idKey] === dbRow[idKey]);
+//         const mergedRow = {};
+//         dbColumns.forEach(col => {
+//           mergedRow[col] = uploadRow && uploadRow[col] !== undefined ? uploadRow[col] : dbRow[col];
+//         });
+
+//         const comparableCols = dbColumns.filter(col => col !== idKey);
+//         const changedFields = comparableCols.filter(col => mergedRow[col] != dbRow[col]);
+
+//         return { ...mergedRow, _status: changedFields.length > 0 ? "updated" : "untouched", _changedFields: changedFields.join(", ") };
+//       });
+
+//       // Add new rows
+//       const newRows = uploadWithStatus.filter(r => !dbMap.has(r[idKey])).map(r => ({
+//         ...r,
+//         _status: "new",
+//         _changedFields: ""
+//       }));
+
+//       setPreviewData([...previewWithStatus, ...newRows]);
+//       setUploaded(true);
+//       toast.success("✅ File previewed successfully!", { position: "top-center", autoClose: 2000, theme: "colored" });
+//     } catch (error) {
+//       console.error("Upload failed:", error.response?.data || error.message);
+//       toast.error("❌ Failed to preview the file.", { position: "top-center", autoClose: 3000, theme: "colored" });
+//     }
+//   };
+
+//   const handleConfirm = async () => {
+//     setConfirming(true);
+//     try {
+//       const confirmUrl =
+//         tableType === "checkstatus"
+//           ? `${domain}/DataUpload/confirmUpload`
+//           : `${domain}/citizenID/upload/confirmUpload`;
+
+//       // ✅ Send previewData (with currentStatus included)
+//       await axios.post(confirmUrl, { confirm: true });
+
+//       toast.success("✅ Data successfully inserted/updated!", { position: "top-center", autoClose: 3000, theme: "colored" });
+//       setFile(null);
+//       resetState();
+//     } catch (error) {
+//       console.error("Confirm failed:", error.response?.data || error.message);
+//       toast.error("❌ Failed to confirm upload.", { position: "top-center", autoClose: 3000, theme: "colored" });
+//     } finally {
+//       setConfirming(false);
+//     }
+//   };
+
+//   const renderTable = (data, title, columns) => {
+//     const hasRows = Array.isArray(data) && data.length > 0;
+
+//     return (
+//       <>
+//         <h3 style={{ marginTop: '2rem' }}>{title}</h3>
+//         {!hasRows ? (
+//           <div style={{
+//             padding: '1rem',
+//             border: '1px solid #eee',
+//             borderRadius: '8px',
+//             background: '#fafafa',
+//             color: '#666'
+//           }}>No rows match this filter.</div>
+//         ) : (
+//           <div style={{ overflowX: 'auto', maxHeight: '400px', marginBottom: '1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', borderRadius: '8px' }}>
+//             <table style={{ borderCollapse: 'collapse', width: '100%', fontFamily: 'Arial', fontSize: '0.9rem', color: '#333', backgroundColor: '#fff', border: '1px solid #ddd' }}>
+//               <thead>
+//                 <tr style={{ backgroundColor: '#f4f6f8', fontWeight: 'bold', borderBottom: '2px solid #ddd' }}>
+//                   {columns.map((key, idx) => <th key={idx} style={{ padding: '10px' }}>{key}</th>)}
+//                 </tr>
+//               </thead>
+//               <tbody>
+//                 {data.map((row, i) => {
+//                   const status = row._status;
+//                   const bgColor = status === 'new' ? '#e6ffe6' :
+//                     status === 'updated' ? '#fffbe6' :
+//                       status === 'untouched' ? '#f0f0f0' :
+//                         i % 2 === 0 ? '#fff' : '#f9f9f9';
+
+//                   const changedFieldsList = String(row._changedFields || "")
+//                     .split(',')
+//                     .map(s => s.trim())
+//                     .filter(Boolean);
+
+//                   return (
+//                     <tr key={i} style={{ backgroundColor: bgColor, borderBottom: '1px solid #eee', transition: 'background 0.3s' }}
+//                       onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#e6f7ff')}
+//                       onMouseLeave={e => (e.currentTarget.style.backgroundColor = bgColor)}
+//                     >
+//                       {columns.map((key, j) => {
+//                         const isChanged = row._status === 'updated' && changedFieldsList.includes(key);
+//                         let value = row[key];
+//                         let displayVal = value;
+
+//                         const keyLower = key.toLowerCase();
+
+//                         if (keyLower.startsWith('stage')) {
+//                           if (value === null || value === undefined || value === '') displayVal = '–';
+//                           else if (value === 'ผ่าน' || value === '1') displayVal = '✅';
+//                           else if (value === 'ไม่ผ่าน' || value === '0') displayVal = '❌';
+//                           else if (String(value).trim() === 'รอดำเนินการ' || String(value).trim() === 'รอ' || String(value).trim() === 'pending'||String(value).trim() === 'Pending') displayVal = '⏳';
+//                           else displayVal = '–';
+//                         }
+
+//                         if (keyLower === 'currentstatus') {
+//                           displayVal = value;
+//                         }
+
+//                         const cellStyle = {
+//                           padding: '8px',
+//                           textAlign: 'center',
+//                           backgroundColor: isChanged ? '#fff2cc' : undefined,
+//                           fontWeight: (isChanged) ? 'bold' : undefined,
+//                           border: '1px solid #eee'
+//                         };
+
+//                         return (
+//                           <td key={j} style={cellStyle}>
+//                             {key === '_status'
+//                               ? status === 'new' ? '🆕 New'
+//                                 : status === 'updated' ? '✏️ Updated'
+//                                   : '⚪ Untouched'
+//                               : key === '_changedFields'
+//                                 ? (Array.isArray(row[key]) ? row[key].join(', ') : row[key] ?? '–')
+//                                 : displayVal ?? '–'}
+//                           </td>
+//                         );
+//                       })}
+//                     </tr>
+//                   );
+//                 })}
+//               </tbody>
+//             </table>
+//           </div>
+//         )}
+//       </>
+//     );
+//   };
+
+//   const filteredData = previewData.filter(row => {
+//     if (searchTerm.trim()) {
+//       const lowerSearch = searchTerm.toLowerCase();
+//       const matchesSearch = Object.values(row).some(val => val != null && String(val).toLowerCase().includes(lowerSearch));
+//       if (!matchesSearch) return false;
+//     }
+//     if (statusFilter !== "all" && row._status !== statusFilter) return false;
+//     return true;
+//   });
+
+//   const tableColumns = previewData.length > 0 ? Object.keys(previewData[0]) : [];
+//   const totalPages = Math.max(1, Math.ceil(filteredData.length / rowsPerPage));
+//   const currentPageSafe = Math.min(currentPage, totalPages);
+//   const indexOfLastRow = currentPageSafe * rowsPerPage;
+//   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+//   const currentRows = filteredData.slice(indexOfFirstRow, indexOfLastRow);
+
+//   return (
+//     <div style={{ minHeight: '100vh', backgroundColor: '#001f3f', padding: '2rem', color: '#fff' }}>
+//       <h2>Upload CSV / Excel</h2>
+
+//       <div style={{ marginBottom: '1rem' }}>
+//         <label>Table: </label>
+//         <select value={tableType} onChange={(e) => setTableType(e.target.value)}>
+//           <option value="checkstatus">Check Status</option>
+//           <option value="citizenid">Citizen ID</option>
+//         </select>
+//       </div>
+
+//       <input type="file" accept=".csv,.xlsx,.xlsm,.xlsb,.xltx" onChange={handleFileChange} />
+//       <button onClick={handleUpload} style={{ marginLeft: '10px' }}>Preview</button>
+
+//       {uploaded && previewData.length > 0 && (
+//         <>
+//           <div style={{ marginTop: '1rem' }}>
+//             <input
+//               type="text"
+//               placeholder="Search..."
+//               value={searchTerm}
+//               onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+//               style={{ padding: '6px', width: '250px' }}
+//             />
+//             <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.5rem' }}>
+//               {["all", "new", "updated", "untouched"].map(type => (
+//                 <button
+//                   key={type}
+//                   onClick={() => { setStatusFilter(type); setCurrentPage(1); }}
+//                   style={{
+//                     padding: '6px 12px',
+//                     borderRadius: '6px',
+//                     border: '1px solid #ccc',
+//                     cursor: 'pointer',
+//                     background: statusFilter === type ? "#1890ff" : "#f0f0f0",
+//                     color: statusFilter === type ? "#fff" : "#000",
+//                     fontWeight: statusFilter === type ? "bold" : "normal"
+//                   }}
+//                 >
+//                   {type === "all" ? "📋 All" :
+//                     type === "new" ? "🆕 New" :
+//                       type === "updated" ? "✏️ Updated" :
+//                         "⚪ Untouched"}
+//                 </button>
+//               ))}
+//             </div>
+//           </div>
+
+//           {renderTable(currentRows, `📄 Uploaded File Preview (Page ${currentPageSafe} of ${totalPages})`, tableColumns)}
+
+//           <div style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+//             <button onClick={() => setCurrentPage(p => Math.max(p - 1, 1))} disabled={currentPageSafe === 1}>Previous</button>
+//             <span>Page {currentPageSafe} / {totalPages}</span>
+//             <button onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))} disabled={currentPageSafe === totalPages}>Next</button>
+//           </div>
+
+//           <button onClick={handleConfirm} disabled={confirming} style={{ marginTop: '1rem' }}>
+//             {confirming ? "Confirming..." : "Confirm Upload"}
+//           </button>
+//         </>
+//       )}
+
+//       <ToastContainer />
+//     </div>
+//   );
+// };
+
+// export default UploadPage;
+
+//trying old code
+
+//adjust the code to be compatible with the new database
 import React, { useState } from 'react';
 import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
@@ -5199,7 +5523,7 @@ const UploadPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [tableType, setTableType] = useState("checkstatus");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all"); // filter: all | new | updated | untouched
 
   const rowsPerPage = 50;
   const domain = import.meta.env.VITE_DOMAIN_NAME?.trim() || "http://0.0.0.0";
@@ -5220,29 +5544,14 @@ const UploadPage = () => {
 
   const validateFile = (file) => {
     if (!file) return false;
-    const allowedExtensions = ['csv', 'xlsx', 'xlsm', 'xlsb', 'xltx'];
+    const allowedExtensions = ['xlsx', 'xlsm', 'xlsb', 'xltx'];
     const ext = file.name.split('.').pop().toLowerCase();
     return allowedExtensions.includes(ext);
   };
 
-  // Calculate currentStatus: 1-8 only
-  const calculateCurrentStatus = (row) => {
-    for (let i = 1; i <= 8; i++) {
-      const stageKey = `stage${i}`;
-      const val = row[stageKey];
-      if (val === null || val === undefined || val === '' || val === 'รอดำเนินการ') {
-        return i; // first pending stage
-      }
-      if (val === 'ไม่ผ่าน') {
-        return i; // failed stage, stop here
-      }
-    }
-    return 8; // all stages passed
-  };
-
   const handleUpload = async () => {
     if (!file) return toast.error("❌ Please select a file first.");
-    if (!validateFile(file)) return toast.error("❌ Only CSV or Excel files are allowed.");
+    if (!validateFile(file)) return toast.error("❌ Only Excel files are allowed.");
 
     const formData = new FormData();
     formData.append('file', file);
@@ -5263,42 +5572,67 @@ const UploadPage = () => {
       const res = await axios.post(uploadUrl, formData);
       const uploadRows = res.data.rows || [];
 
-      // Calculate currentStatus for preview
-      const uploadWithStatus = uploadRows.map(r => ({
-        ...r,
-        currentStatus: calculateCurrentStatus(r),
-      }));
-
       const dbRes = await axios.get(dbUrl);
       const dbRows = dbRes.data?.rows || dbRes.data || [];
       const dbMap = new Map(dbRows.map(r => [r[idKey], r]));
 
-      const dbColumns = dbRows.length > 0 ? Object.keys(dbRows[0]) : Object.keys(uploadRows[0]);
+      const dbColumns = dbRows.length > 0 ? Object.keys(dbRows[0]) : [];
 
       // Merge DB + Upload for preview
       const previewWithStatus = dbRows.map(dbRow => {
-        const uploadRow = uploadWithStatus.find(r => r[idKey] === dbRow[idKey]);
+        const uploadRow = uploadRows.find(r => r[idKey] === dbRow[idKey]);
         const mergedRow = {};
+
         dbColumns.forEach(col => {
           mergedRow[col] = uploadRow && uploadRow[col] !== undefined ? uploadRow[col] : dbRow[col];
         });
 
         const comparableCols = dbColumns.filter(col => col !== idKey);
-        const changedFields = comparableCols.filter(col => mergedRow[col] != dbRow[col]);
+        const changedFields = comparableCols.filter(col => {
+          let dbVal = dbRow[col];
+          let uploadVal = mergedRow[col];
 
-        return { ...mergedRow, _status: changedFields.length > 0 ? "updated" : "untouched", _changedFields: changedFields.join(", ") };
+          // Normalize stage columns
+          if (col.toLowerCase().startsWith('stage')) {
+            const normDb = dbVal === 1 || dbVal === '1' || dbVal === true || String(dbVal).toUpperCase() === 'TRUE';
+            const normUp = uploadVal === 1 || uploadVal === '1' || uploadVal === true || String(uploadVal).toUpperCase() === 'TRUE';
+            return normDb !== normUp;
+          }
+
+          // Normalize status column
+          if (col.toLowerCase() === 'status') {
+            const normDb = ['PASS','FAIL'].includes(String(dbVal).toUpperCase()) ? String(dbVal).toUpperCase() : null;
+            const normUp = ['PASS','FAIL'].includes(String(uploadVal).toUpperCase()) ? String(uploadVal).toUpperCase() : null;
+            return normDb !== normUp;
+          }
+
+          // Normalize other null/empty/'NULL'
+          const normDb = (dbVal === null || dbVal === undefined || dbVal === '' || String(dbVal).toUpperCase() === 'NULL') ? null : dbVal;
+          const normUp = (uploadVal === null || uploadVal === undefined || uploadVal === '' || String(uploadVal).toUpperCase() === 'NULL') ? null : uploadVal;
+
+          return normDb != normUp;
+        });
+
+        return {
+          ...mergedRow,
+          _status: changedFields.length > 0 ? "updated" : "untouched",
+          _changedFields: changedFields.join(", ")
+        };
       });
 
-      // Add new rows
-      const newRows = uploadWithStatus.filter(r => !dbMap.has(r[idKey])).map(r => ({
-        ...r,
-        _status: "new",
-        _changedFields: ""
-      }));
+      // Add new rows that are in upload but not in DB
+      const newRows = uploadRows
+        .filter(r => !dbMap.has(r[idKey]))
+        .map(r => {
+          const row = {};
+          dbColumns.forEach(col => (row[col] = r[col] ?? null));
+          return { ...row, _status: "new", _changedFields: "" };
+        });
 
       setPreviewData([...previewWithStatus, ...newRows]);
       setUploaded(true);
       toast.success("✅ File previewed successfully!", { position: "top-center", autoClose: 2000, theme: "colored" });
+
     } catch (error) {
       console.error("Upload failed:", error.response?.data || error.message);
       toast.error("❌ Failed to preview the file.", { position: "top-center", autoClose: 3000, theme: "colored" });
@@ -5313,26 +5647,26 @@ const UploadPage = () => {
           ? `${domain}/DataUpload/confirmUpload`
           : `${domain}/citizenID/upload/confirmUpload`;
 
-      // ✅ Send previewData (with currentStatus included)
-      await axios.post(confirmUrl, { rows: previewData });
-
+      await axios.post(confirmUrl, { confirm: true });
       toast.success("✅ Data successfully inserted/updated!", { position: "top-center", autoClose: 3000, theme: "colored" });
       setFile(null);
       resetState();
     } catch (error) {
-      console.error("Confirm failed:", error.response?.data || error.message);
+      console.error("Confirm failed:", error);
       toast.error("❌ Failed to confirm upload.", { position: "top-center", autoClose: 3000, theme: "colored" });
     } finally {
       setConfirming(false);
     }
   };
 
+  // Safely render even if data is empty
   const renderTable = (data, title, columns) => {
     const hasRows = Array.isArray(data) && data.length > 0;
 
     return (
       <>
         <h3 style={{ marginTop: '2rem' }}>{title}</h3>
+
         {!hasRows ? (
           <div style={{
             padding: '1rem',
@@ -5340,66 +5674,96 @@ const UploadPage = () => {
             borderRadius: '8px',
             background: '#fafafa',
             color: '#666'
-          }}>No rows match this filter.</div>
+          }}>
+            No rows match this filter.
+          </div>
         ) : (
           <div style={{ overflowX: 'auto', maxHeight: '400px', marginBottom: '1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', borderRadius: '8px' }}>
             <table style={{ borderCollapse: 'collapse', width: '100%', fontFamily: 'Arial', fontSize: '0.9rem', color: '#333', backgroundColor: '#fff', border: '1px solid #ddd' }}>
               <thead>
                 <tr style={{ backgroundColor: '#f4f6f8', fontWeight: 'bold', borderBottom: '2px solid #ddd' }}>
-                  {columns.map((key, idx) => <th key={idx} style={{ padding: '10px' }}>{key}</th>)}
+                  {columns.map((key, idx) => (
+                    <th key={idx} style={{ padding: '10px' }}>{key}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
                 {data.map((row, i) => {
                   const status = row._status;
-                  const bgColor = status === 'new' ? '#e6ffe6' :
+                  const bgColor =
+                    status === 'new' ? '#e6ffe6' :
                     status === 'updated' ? '#fffbe6' :
-                      status === 'untouched' ? '#f0f0f0' :
-                        i % 2 === 0 ? '#fff' : '#f9f9f9';
+                    status === 'untouched' ? '#f0f0f0' :
+                    i % 2 === 0 ? '#fff' : '#f9f9f9';
 
+                  // Prepare exact changed fields list (avoid substring collisions)
                   const changedFieldsList = String(row._changedFields || "")
                     .split(',')
                     .map(s => s.trim())
                     .filter(Boolean);
 
                   return (
-                    <tr key={i} style={{ backgroundColor: bgColor, borderBottom: '1px solid #eee', transition: 'background 0.3s' }}
+                    <tr
+                      key={i}
+                      style={{ backgroundColor: bgColor, borderBottom: '1px solid #eee', transition: 'background 0.3s' }}
                       onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#e6f7ff')}
                       onMouseLeave={e => (e.currentTarget.style.backgroundColor = bgColor)}
                     >
                       {columns.map((key, j) => {
                         const isChanged = row._status === 'updated' && changedFieldsList.includes(key);
+                        const cellStyle = {
+                          padding: '8px',
+                          textAlign: 'center',
+                          backgroundColor: isChanged ? '#fff2cc' : undefined,
+                          fontWeight: isChanged ? 'bold' : undefined,
+                          border: '1px solid #eee'
+                        };
+
+                        // Stage columns display
                         let value = row[key];
                         let displayVal = value;
 
                         const keyLower = key.toLowerCase();
 
-                        if (keyLower.startsWith('stage')) {
-                          if (value === null || value === undefined || value === '') displayVal = '–';
-                          else if (value === 'ผ่าน' || value === '1') displayVal = '✅';
-                          else if (value === 'ไม่ผ่าน' || value === '0') displayVal = '❌';
-                          else if (String(value).trim() === 'รอดำเนินการ' || String(value).trim() === 'รอ' || String(value).trim() === 'pending'||String(value).trim() === 'Pending') displayVal = '⏳';
-                          else displayVal = '–';
-                        }
-
+                        // Handle currentStatus as boolean
                         if (keyLower === 'currentstatus') {
-                          displayVal = value;
+                          if (value === true || value === 1 || value === '1' || String(value).toUpperCase() === 'TRUE') {
+                            displayVal = 'Pass';
+                          } else if (value === false || value === 0 || value === '0' || String(value).toUpperCase() === 'FALSE') {
+                            displayVal = 'Fail';
+                          } else {
+                            displayVal = '–';
+                          }
                         }
 
-                        const cellStyle = {
-                          padding: '8px',
-                          textAlign: 'center',
-                          backgroundColor: isChanged ? '#fff2cc' : undefined,
-                          fontWeight: (isChanged) ? 'bold' : undefined,
-                          border: '1px solid #eee'
-                        };
+                        // Handle stage as numeric status
+                        if (keyLower.startsWith('stage') && keyLower !== 'currentstatus') {
+                          if (value === null || value === undefined || value === '' || String(value).toLowerCase() === 'null') {
+                            displayVal = '–';
+                          } else if (value === 1 || value === '1' || String(value).trim() === 'ผ่าน') {
+                            displayVal = '✅';
+                          } else if (value === 0 || value === '0' || String(value).trim() === 'ไม่ผ่าน') {
+                            displayVal = '❌';
+                          } else if (String(value).trim() === 'รอดำเนินการ' || String(value).trim() === 'รอ' || String(value).trim() === 'pending' || String(value).trim() === 'Pending') {
+                            displayVal = '⏳';
+                          } else {
+                            displayVal = '–';
+                          }
+                        }
+
+                        // // Handle currentStatus as string status
+                        // if (keyLower === 'currentstatus') {
+                        //   const val = value ? String(value).toUpperCase() : null;
+                        //   displayVal = val === 'PASS' ? 'Pass' : val === 'FAIL' ? 'Fail' : '–';
+                        // }
+
 
                         return (
                           <td key={j} style={cellStyle}>
                             {key === '_status'
                               ? status === 'new' ? '🆕 New'
                                 : status === 'updated' ? '✏️ Updated'
-                                  : '⚪ Untouched'
+                                : '⚪ Untouched'
                               : key === '_changedFields'
                                 ? (Array.isArray(row[key]) ? row[key].join(', ') : row[key] ?? '–')
                                 : displayVal ?? '–'}
@@ -5417,17 +5781,30 @@ const UploadPage = () => {
     );
   };
 
+  // Search + status filter
   const filteredData = previewData.filter(row => {
+    // Search filter
     if (searchTerm.trim()) {
       const lowerSearch = searchTerm.toLowerCase();
-      const matchesSearch = Object.values(row).some(val => val != null && String(val).toLowerCase().includes(lowerSearch));
+      const matchesSearch = Object.values(row).some(val => {
+        if (val == null) return false;
+        const strVal = String(val).toLowerCase().trim();
+        if ((lowerSearch === "male" || lowerSearch === "female") && strVal === lowerSearch) return true;
+        return strVal.includes(lowerSearch);
+      });
       if (!matchesSearch) return false;
     }
+
+    // Status filter
     if (statusFilter !== "all" && row._status !== statusFilter) return false;
+
     return true;
   });
 
+  // Columns for header (from the full preview set, not the filtered slice)
   const tableColumns = previewData.length > 0 ? Object.keys(previewData[0]) : [];
+
+  // Pagination (safe when filteredData.length === 0)
   const totalPages = Math.max(1, Math.ceil(filteredData.length / rowsPerPage));
   const currentPageSafe = Math.min(currentPage, totalPages);
   const indexOfLastRow = currentPageSafe * rowsPerPage;
@@ -5459,6 +5836,8 @@ const UploadPage = () => {
               onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }}
               style={{ padding: '6px', width: '250px' }}
             />
+
+            {/* Status filter buttons */}
             <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.5rem' }}>
               {["all", "new", "updated", "untouched"].map(type => (
                 <button
@@ -5475,9 +5854,9 @@ const UploadPage = () => {
                   }}
                 >
                   {type === "all" ? "📋 All" :
-                    type === "new" ? "🆕 New" :
-                      type === "updated" ? "✏️ Updated" :
-                        "⚪ Untouched"}
+                   type === "new" ? "🆕 New" :
+                   type === "updated" ? "✏️ Updated" :
+                   "⚪ Untouched"}
                 </button>
               ))}
             </div>
@@ -5503,3 +5882,5 @@ const UploadPage = () => {
 };
 
 export default UploadPage;
+
+
