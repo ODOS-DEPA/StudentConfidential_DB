@@ -18,6 +18,8 @@ app.use(
     origin: [
       "http://127.0.0.1:3000",
       "http://localhost:3000",
+      "https://nodomain.space",
+      "https://odos.thaigov.go.th/",
       process.env.VITE_DOMAIN_NAME,
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
