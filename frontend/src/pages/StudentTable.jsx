@@ -120,7 +120,7 @@ const StudentTable = () => {
     // Handle currentStatus (boolean-like)
     if (normKey === "currentstatus") {
       const strVal = String(value).trim().toLowerCase();
-      return strVal === null ? "⌛" : strVal;
+      return strVal === null || strVal === "" ? "⌛" : strVal;
     }
 
     // Fallback (just display raw)
