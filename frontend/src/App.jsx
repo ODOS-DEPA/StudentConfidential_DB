@@ -1,7 +1,7 @@
 // //fixing background color from static to gradient and adding logo
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import StudentTable from './components/StudentTable';
+import StudentTable from './pages/StudentTable';
 import UploadPage from './pages/UploadPage';
 import EditPage from './pages/EditPage';
 import logo from './assets/depa.jpg'; // replace with your logo path
