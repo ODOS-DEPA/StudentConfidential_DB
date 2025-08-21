@@ -1,4 +1,5 @@
 //add new button setcurrentstatus
+//21/8/2025 remove auto set current status since it takes too long + irrelevant at the moment
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import * as XLSX from "xlsx";
