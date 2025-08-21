@@ -93,8 +93,13 @@ const UploadPage = () => {
         const mergedRow = {};
 
         dbColumns.forEach((col) => {
-          // Always prefer upload value if exists
-          mergedRow[col] = hasMeaningfulValue(uploadRow, col) ? uploadRow[col] : dbRow[col];
+          if (uploadRow) {
+            // Use upload value even if null/empty
+            mergedRow[col] = uploadRow.hasOwnProperty(col) ? uploadRow[col] : dbRow[col];
+          } else {
+            // No upload row, fallback to DB
+            mergedRow[col] = dbRow[col];
+          }
         });
 
         let _status = "";
@@ -199,8 +204,11 @@ const UploadPage = () => {
                         
 
                         if (keyLower === "currentstatus") {
-                          const strVal = String(value).trim().toLowerCase();
-                          displayVal = strVal === null || strVal === "" ? "⌛" : strVal;
+                          if (value === null || value === undefined || value === "" || String(value).trim().toLowerCase() === "null") {
+                            displayVal = "⌛";
+                          } else {
+                            displayVal = String(value).trim();
+                          }
                         }
 
                         if (keyLower.startsWith("stage") && keyLower !== "currentstatus") {
