@@ -205,8 +205,12 @@ const UploadPage = () => {
 
                         if (keyLower === "currentstatus") {
                           if (value === null || value === undefined || value === "" || String(value).trim().toLowerCase() === "null") {
-                            displayVal = "⌛";
-                          } else {
+                            displayVal = "-";
+                          }
+                          else if (String(value).trim() === "รอดำเนินการ") {
+                            displayVal = "⏳";
+                          }
+                           else {
                             displayVal = String(value).trim();
                           }
                         }
@@ -215,7 +219,8 @@ const UploadPage = () => {
                           if (value === 1 || value === "1" || String(value).trim() === "ผ่าน") displayVal = "✅";
                           else if (value === 0 || value === "0" || String(value).trim() === "ไม่ผ่าน") displayVal = "❌";
                           else if (String(value).trim() === "ติดเงื่อนไข") displayVal = "⚠️";
-                          else displayVal = "⌛";
+                          else if (String(value).trim() === "รอดำเนินการ") displayVal = "⏳";
+                          else displayVal = "-";
                         }
 
                         const cellStyle = { padding: "8px", textAlign: "center", backgroundColor: isChanged ? "#fff2cc" : undefined, fontWeight: isChanged ? "bold" : undefined, border: "1px solid #eee" };

@@ -102,16 +102,18 @@ const StudentTable = () => {
       const strVal = String(value ?? "").trim();
       if (strVal === "1" || strVal === "ผ่าน") return "✅";
       if (strVal === "0" || strVal === "ไม่ผ่าน") return "❌";
+      if (strVal === "รอดำเนินการ") return "⏳";
       if (strVal === "ติดเงื่อนไข") return "⚠️";
-      if (strVal === "" || strVal.toLowerCase() === "null") return "⌛";
-      return "⌛";
+      if (strVal === "" || strVal.toLowerCase() === "null") return "-";
+      return "-";
     }
 
     // Handle currentStatus
     if (normKey === "currentstatus") {
       if (value === null || value === undefined || String(value).trim() === "" || String(value).trim().toLowerCase() === "null") {
-        return "⌛"; // hourglass for empty/null
+        return "-"; // hourglass for empty/null
       }
+      else if (value === "รอดำเนินการ") return "⏳";
       return String(value).trim();
     }
 
