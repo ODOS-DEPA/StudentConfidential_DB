@@ -82,7 +82,7 @@ citizen_identity_DB.post('/confirmUpload', async (req, res) => {
       const batchStart = Date.now();
       const batch = insertRows.slice(i, i + batchSize);
       const allValues = batch.map(row => columns.map(col => row[col] ?? null));
-      const sqlQuery = `INSERT INTO citizen_identity (${columns.join(',')}) VALUES ${allValues.map(() => `(${placeholders})`).join(',')}`;
+      const sqlQuery = `INSERT IGNORE INTO citizen_identity (${columns.join(',')}) VALUES ${allValues.map(() => `(${placeholders})`).join(',')}`;
       await sql.query(sqlQuery, allValues.flat());
       console.log(`Inserted rows ${i + 1} to ${i + batch.length} | Time: ${Date.now() - batchStart} ms`);
     }
