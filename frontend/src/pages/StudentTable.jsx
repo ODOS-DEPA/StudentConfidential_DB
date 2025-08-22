@@ -1,5 +1,6 @@
 //change display format
 //21/8/25 changing the display format for each status condition
+//fix the currentstatus when its null and got skipped in custom displaying phase
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import SearchBar from '../components/SearchBar';
@@ -52,9 +53,7 @@ const StudentTable = () => {
     const filtered = data.filter(row =>
       Object.entries(row).some(([key, value]) => {
         const val = String(value ?? '').toLowerCase();
-        if (key.toLowerCase() === 'gender') {
-          return val === term;
-        }
+        if (key.toLowerCase() === 'gender') return val === term;
         return val.includes(term);
       })
     );
@@ -96,46 +95,32 @@ const StudentTable = () => {
   };
 
   const formatValue = (key, value) => {
-    // Normalize for null
-    if (
-      value === null ||
-      value === undefined ||
-      (typeof value === "string" && value.trim().toLowerCase() === "null")
-    ) {
-      return "–";
-    }
-
     const normKey = key.trim().toLowerCase();
 
-    // Handle stage1..stage8 (0/1/null strings)
+    // Handle stage1..stage8
     if (normKey.startsWith("stage")) {
-      const strVal = String(value).trim();
+      const strVal = String(value ?? "").trim();
       if (strVal === "1" || strVal === "ผ่าน") return "✅";
       if (strVal === "0" || strVal === "ไม่ผ่าน") return "❌";
       if (strVal === "ติดเงื่อนไข") return "⚠️";
-      if (strVal === "รอดำเนินการ" || strVal === null || strVal === "") return "⌛";
+      if (strVal === "" || strVal.toLowerCase() === "null") return "⌛";
       return "⌛";
     }
 
-    // Handle currentStatus (boolean-like)
+    // Handle currentStatus
     if (normKey === "currentstatus") {
-      const strVal = String(value).trim().toLowerCase();
-      return strVal === null || strVal === "" ? "⌛" : strVal;
+      if (value === null || value === undefined || String(value).trim() === "" || String(value).trim().toLowerCase() === "null") {
+        return "⌛"; // hourglass for empty/null
+      }
+      return String(value).trim();
     }
 
-    // Fallback (just display raw)
-    return value;
-  };
-
-  const displayValue = (value) => {
-    if (
-      value === null ||
-      value === undefined ||
-      (typeof value === "string" && value.trim().toLowerCase() === "null")
-    ) {
-      return "–";
+    // Fallback for other columns
+    if (value === null || value === undefined || String(value).trim().toLowerCase() === "null") {
+      return "–"; // dash for general nulls
     }
-    return value;
+
+    return String(value);
   };
 
   if (loading) return <p style={{ color: "white" }}>Loading data...</p>;
@@ -158,7 +143,6 @@ const StudentTable = () => {
         </label>
 
         <div style={{ position: "relative" }}>
-          {/* Columns button */}
           <button
             onClick={() => setShowColumnDropdown(!showColumnDropdown)}
             style={{
@@ -174,7 +158,6 @@ const StudentTable = () => {
             ⚙️ Columns
           </button>
 
-          {/* Table selector button */}
           <button
             onClick={() => setShowTableDropdown(!showTableDropdown)}
             style={{
@@ -274,7 +257,7 @@ const StudentTable = () => {
       </div>
 
       <div style={{ minHeight: `${rowsPerPage * rowHeight + tablePadding}px`, transition: "min-height 0.2s ease" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "1rem", fontSize: "14px", backgroundColor: "yellow", color: "white" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "1rem", fontSize: "14px", backgroundColor: "#fff", color: "#000" }}>
           <thead>
             <tr>
               {allColumns.map((key, i) =>
@@ -301,7 +284,7 @@ const StudentTable = () => {
                 {allColumns.map((key, j) =>
                   visibleColumns.includes(key) ? (
                     <td key={j} style={{ padding: "10px", color: "#000" }}>
-                      {shouldTransform(key) ? formatValue(key, row[key]) : displayValue(row[key])}
+                      {shouldTransform(key) ? formatValue(key, row[key]) : (row[key] ?? "–")}
                     </td>
                   ) : null
                 )}
