@@ -40,8 +40,8 @@ app.use("/citizenID",student_citizen_identity);           //all-Seperate searchi
 app.use("/citizenID/upload",citizen_identity_DB);         // insert update data
 app.use("/EnglishScore",EnglishScore);                    //all-Seperate searching
 app.use("/EnglishScore/upload",EnglishScoreTest_DB)       // insert update data
-app.use("/TechScore",EnglishScore);                       //all-Seperate searching
-app.use("/TechScore/upload",EnglishScoreTest_DB)          // insert update data
+app.use("/TechScore",TechScore);                       //all-Seperate searching
+app.use("/TechScore/upload",TechScoreTest_DB)          // insert update data
 
 const HOST = process.env.HOST ;
 const PORT = process.env.PORT ;
