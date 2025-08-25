@@ -8,6 +8,8 @@ import citizen_identity_DB from "./Routes/citizen_identity_DB.js";
 import student_citizen_identity from "./Routes/student_citizen_identity.js";
 import EnglishScore from "./Routes/EnglishScoreTest.js";
 import EnglishScoreTest_DB from "./Routes/EnglishScore_DB.js";
+import TechScore from "./Routes/TechScoreTest.js";
+import TechScoreTest_DB from "./Routes/TechScore_DB.js";
 dotenv.config({ path: '../.env' });
 
 
@@ -38,7 +40,8 @@ app.use("/citizenID",student_citizen_identity);           //all-Seperate searchi
 app.use("/citizenID/upload",citizen_identity_DB);         // insert update data
 app.use("/EnglishScore",EnglishScore);                    //all-Seperate searching
 app.use("/EnglishScore/upload",EnglishScoreTest_DB)       // insert update data
-
+app.use("/TechScore",EnglishScore);                       //all-Seperate searching
+app.use("/TechScore/upload",EnglishScoreTest_DB)          // insert update data
 
 const HOST = process.env.HOST ;
 const PORT = process.env.PORT ;
