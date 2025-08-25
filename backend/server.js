@@ -6,6 +6,8 @@ import studentrouter from "./Routes/checkstatus.js";
 import checkstatus_DB from "./Routes/checkstatus_DB.js";
 import citizen_identity_DB from "./Routes/citizen_identity_DB.js";
 import student_citizen_identity from "./Routes/student_citizen_identity.js";
+import EnglishScore from "./Routes/EnglishScoreTest.js";
+import EnglishScoreTest_DB from "./Routes/EnglishScore_DB.js";
 dotenv.config({ path: '../.env' });
 
 
@@ -30,13 +32,15 @@ app.use(
 
 
 app.use(express.json());
-app.use('/students', studentrouter);
-app.use("/DataUpload",checkstatus_DB);
-app.use("/citizenID",student_citizen_identity);
-app.use("/citizenID/upload",citizen_identity_DB);
+app.use('/students', studentrouter);                      //all-Seperate searching
+app.use("/DataUpload",checkstatus_DB);                    // insert update data
+app.use("/citizenID",student_citizen_identity);           //all-Seperate searching
+app.use("/citizenID/upload",citizen_identity_DB);         // insert update data
+app.use("/EnglishScore",EnglishScore);                    //all-Seperate searching
+app.use("/EnglishScore/upload",EnglishScoreTest_DB)       // insert update data
+
 
 const HOST = process.env.HOST ;
-
 const PORT = process.env.PORT ;
 
 console.log(`Attempting to start server on Port: ${PORT}`);
@@ -44,5 +48,4 @@ console.log(`Attempting to start server on Port: ${PORT}`);
 
 app.listen(PORT, HOST, () => {
   console.log(`Server is running on http://${HOST}:${PORT}`);
-  console.log(`${process.env.VITE_DOMAIN_NAME}:${process.env.OUTSIDE_FRONT_PORT}`)
 });
