@@ -208,7 +208,8 @@ const EditPage = () => {
                     key={idx}
                     style={{
                       padding: "10px",
-                      minWidth: /^stage[1-8]$/i.test(key) ? "80px" : "auto",
+                      minWidth: /^stage[1-8]$/i.test(key) ? "90px" : "auto",
+                      minWidth: /^Gender$/i.test(key) ? "50px" : "auto",
                     }}
                   >
                     {key}
@@ -236,6 +237,7 @@ const EditPage = () => {
                 >
                   {tableColumns.map((key, j) => {
                     const isStageColumn = /^stage[1-8]$/i.test(key);
+                    const isGenderColumn = /^Gender$/i.test(key);
                     const currentValue =
                       editedRows[row.StudentID]?.[key] ?? row[key] ?? "";
 
@@ -246,9 +248,11 @@ const EditPage = () => {
                           padding: "8px",
                           textAlign: "center",
                           border: "1px solid #eee",
-                          minWidth: isStageColumn ? "80px" : "auto",
+                          minWidth: isStageColumn ? "90px" : "auto",
+                          minWidth: isGenderColumn ? "50px" : "auto",
                         }}
                       >
+                        
                         {isStageColumn ? (
                           editingRowId === row.StudentID ? (
                             <select
@@ -271,7 +275,24 @@ const EditPage = () => {
                           ) : (
                             currentValue || "–"
                           )
-                        ) : editingRowId === row.StudentID ? (
+                        ) : isGenderColumn ? (
+                        // Gender dropdown
+                        editingRowId === row.StudentID ? (
+                          <select
+                            value={currentValue}
+                            onChange={(e) =>
+                              handleChange(row.StudentID, key, e.target.value || null)
+                            }
+                            style={{ padding: "4px", width: "100%" }}
+                          >
+                            <option value="">(empty)</option>
+                            <option value="ชาย">ชาย</option>
+                            <option value="หญิง">หญิง</option>
+                          </select>
+                        ) : (
+                          currentValue || "–"
+                        )
+                      ) : editingRowId === row.StudentID ? (
                           <input
                             value={currentValue}
                             onChange={(e) =>
