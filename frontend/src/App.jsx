@@ -151,7 +151,7 @@
 
 // export default App;
 
-
+//add permission to acess editpage, uploadpage, and some functions in StudentTable
 // App.jsx
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
