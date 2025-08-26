@@ -227,7 +227,6 @@ function ProtectedPage({ children }) {
     </div>
   );
 }
-
 // --------------------
 // Main App Component
 // --------------------
