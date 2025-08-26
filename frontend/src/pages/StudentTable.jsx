@@ -1,11 +1,12 @@
 //fix table from overflowing and need permission to access sensitive data like email, phone number, current status, KeyToken
 //and also table and column button.
+//add horizontal scroll
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import SearchBar from '../components/SearchBar';
 import { useAdmin } from '../App'; // Import admin context
 
-const sensitiveColumns = ['Email', 'Phone_number', 'currentStatus', 'KeyToken']; //columns that are hidden by default
+const sensitiveColumns = ['Email', 'Phone_number', 'currentStatus', 'KeyToken']; // columns hidden by default
 
 const StudentTable = () => {
   const { adminLoggedIn } = useAdmin();
@@ -37,7 +38,6 @@ const StudentTable = () => {
       setData(rows);
       setFilteredData(rows);
 
-      // Show only non-sensitive columns by default, unless admin
       const cols = Object.keys(rows[0] || {}).filter(
         col => adminLoggedIn || !sensitiveColumns.includes(col)
       );
@@ -137,14 +137,22 @@ const StudentTable = () => {
           </select>
         </label>
 
-        {/* Columns & Tables buttons only for admin */}
         {adminLoggedIn && (
           <div style={{ position: "relative" }}>
             <button onClick={() => setShowColumnDropdown(!showColumnDropdown)} style={{ padding: "6px 10px" }}>⚙️ Columns</button>
             <button onClick={() => setShowTableDropdown(!showTableDropdown)} style={{ padding: "6px 10px", marginLeft: "8px" }}>📋 Tables</button>
 
             {showColumnDropdown && (
-              <div style={{ position: "absolute", top: "110%", left: 0, backgroundColor: "#fff", color: "#000", padding: "10px", borderRadius: "6px", zIndex: 20 }}>
+              <div style={{
+                position: "absolute",
+                top: "110%",
+                left: 0,
+                backgroundColor: "#fff",
+                color: "#000",
+                padding: "10px",
+                borderRadius: "6px",
+                zIndex: 20
+              }}>
                 {allColumns.map((key, i) => (
                   <div key={i}>
                     <input type="checkbox" checked={visibleColumns.includes(key)} onChange={() => handleToggleColumn(key)} id={`col-${key}`} />
@@ -171,7 +179,7 @@ const StudentTable = () => {
                 color: "#000"
               }}>
                 <div
-                  style={{ cursor: "pointer", padding: "8px 16px", borderBottom: "1px solid #eee", backgroundColor: "#fff" }}
+                  style={{ cursor: "pointer", padding: "8px 16px", borderBottom: "1px solid #eee" }}
                   onClick={() => { setTableType('students'); setShowTableDropdown(false); }}
                   onMouseEnter={e => e.currentTarget.style.backgroundColor = "#f0f0f0"}
                   onMouseLeave={e => e.currentTarget.style.backgroundColor = "#fff"}
@@ -194,19 +202,22 @@ const StudentTable = () => {
 
       {/* Table */}
       <div style={{
-        minHeight: `${rowsPerPage * rowHeight + tablePadding}px`,
-        transition: "min-height 0.2s ease",
-        overflowX: "auto",   // horizontal scroll
-        maxWidth: "100%"
+        width: "100%",
+        overflowX: "auto",
+        paddingBottom: "10px",
+        marginTop: "1rem",
+        border: "1px solid #ccc",
+        borderRadius: "8px",
+        backgroundColor: "#fff",
+        scrollbarWidth: "thin",
+        scrollbarColor: "#deedfcff #f0f0f0"
       }}>
         <table style={{
-          width: "100%",
+          width: "max-content",
+          minWidth: "100%",
           borderCollapse: "collapse",
-          marginTop: "1rem",
           fontSize: "14px",
-          backgroundColor: "#fff",
-          color: "#000",
-          tableLayout: "fixed" // responsive column widths
+          tableLayout: "fixed"
         }}>
           <thead>
             <tr>
@@ -295,4 +306,5 @@ const StudentTable = () => {
 };
 
 export default StudentTable;
+
 
