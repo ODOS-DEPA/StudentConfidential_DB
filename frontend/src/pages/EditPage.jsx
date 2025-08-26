@@ -208,8 +208,11 @@ const EditPage = () => {
                     key={idx}
                     style={{
                       padding: "10px",
-                      minWidth: /^stage[1-8]$/i.test(key) ? "90px" : "auto",
-                      minWidth: /^Gender$/i.test(key) ? "50px" : "auto",
+                      minWidth: /^stage[1-8]$/i.test(key)
+                                                          ? "90px"
+                                                          : /^Gender$/i.test(key)
+                                                          ? "50px"
+                                                          : "auto",
                     }}
                   >
                     {key}
@@ -248,8 +251,11 @@ const EditPage = () => {
                           padding: "8px",
                           textAlign: "center",
                           border: "1px solid #eee",
-                          minWidth: isStageColumn ? "90px" : "auto",
-                          minWidth: isGenderColumn ? "50px" : "auto",
+                          minWidth: isStageColumn
+                                                  ? "90px"
+                                                  : isGenderColumn
+                                                  ? "50px"
+                                                  : "auto",
                         }}
                       >
                         
