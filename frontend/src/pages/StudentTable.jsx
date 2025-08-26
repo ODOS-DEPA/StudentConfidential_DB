@@ -5,7 +5,7 @@ import axios from 'axios';
 import SearchBar from '../components/SearchBar';
 import { useAdmin } from '../App'; // Import admin context
 
-const sensitiveColumns = ['Email', 'Phone_number', 'currentStatus', 'KeyToken'];
+const sensitiveColumns = ['Email', 'Phone_number', 'currentStatus', 'KeyToken']; //columns that are hidden by default
 
 const StudentTable = () => {
   const { adminLoggedIn } = useAdmin();
