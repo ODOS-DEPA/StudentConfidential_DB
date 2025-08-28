@@ -1,6 +1,9 @@
 
 
 // 22/08/25 add status button for each stages for convinience + hover effect
+// 25/08/25 add drop down button for gender and fix table from overflowing
+// 26/08/25 fixing duplicate calls on minwidth
+// 22/08/25 add status button for each stages for convenience + hover effect
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import * as XLSX from "xlsx";
@@ -209,10 +212,10 @@ const EditPage = () => {
                     style={{
                       padding: "10px",
                       minWidth: /^stage[1-8]$/i.test(key)
-                                                          ? "90px"
-                                                          : /^Gender$/i.test(key)
-                                                          ? "50px"
-                                                          : "auto",
+                        ? "90px"
+                        : /^Gender$/i.test(key)
+                        ? "50px"
+                        : "auto",
                     }}
                   >
                     {key}
@@ -228,7 +231,7 @@ const EditPage = () => {
                   style={{
                     backgroundColor: i % 2 === 0 ? "#fff" : "#f9f9f9",
                     borderBottom: "1px solid #eee",
-                    cursor: "pointer", //show pointer when hovering row
+                    cursor: "pointer", // show pointer when hovering row
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = "#d7f5fcff";
@@ -252,13 +255,12 @@ const EditPage = () => {
                           textAlign: "center",
                           border: "1px solid #eee",
                           minWidth: isStageColumn
-                                                  ? "90px"
-                                                  : isGenderColumn
-                                                  ? "50px"
-                                                  : "auto",
+                            ? "90px"
+                            : isGenderColumn
+                            ? "50px"
+                            : "auto",
                         }}
                       >
-                        
                         {isStageColumn ? (
                           editingRowId === row.StudentID ? (
                             <select
@@ -282,23 +284,26 @@ const EditPage = () => {
                             currentValue || "–"
                           )
                         ) : isGenderColumn ? (
-                        // Gender dropdown
-                        editingRowId === row.StudentID ? (
-                          <select
-                            value={currentValue}
-                            onChange={(e) =>
-                              handleChange(row.StudentID, key, e.target.value || null)
-                            }
-                            style={{ padding: "4px", width: "100%" }}
-                          >
-                            <option value="">(empty)</option>
-                            <option value="ชาย">ชาย</option>
-                            <option value="หญิง">หญิง</option>
-                          </select>
-                        ) : (
-                          currentValue || "–"
-                        )
-                      ) : editingRowId === row.StudentID ? (
+                          editingRowId === row.StudentID ? (
+                            <select
+                              value={currentValue}
+                              onChange={(e) =>
+                                handleChange(
+                                  row.StudentID,
+                                  key,
+                                  e.target.value || null
+                                )
+                              }
+                              style={{ padding: "4px", width: "100%" }}
+                            >
+                              <option value="">(empty)</option>
+                              <option value="ชาย">ชาย</option>
+                              <option value="หญิง">หญิง</option>
+                            </select>
+                          ) : (
+                            currentValue || "–"
+                          )
+                        ) : editingRowId === row.StudentID ? (
                           <input
                             value={currentValue}
                             onChange={(e) =>
@@ -379,6 +384,7 @@ const EditPage = () => {
 };
 
 export default EditPage;
+
 
 
 
