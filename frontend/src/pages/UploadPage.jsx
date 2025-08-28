@@ -2,6 +2,12 @@
 
 
 //add duplication handling condition
+//add duplication handling condition
+//add duplication handling condition
+//28/8/25 add new two tables engscore and techscore
+// UploadPage.jsx
+// UploadPage.jsx
+// UploadPage.jsx
 import React, { useState } from "react";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
@@ -50,14 +56,6 @@ const UploadPage = () => {
     return String(val).trim();
   };
 
-  const hasMeaningfulValue = (obj, key) => {
-    if (!obj || !Object.prototype.hasOwnProperty.call(obj, key)) return false;
-    const v = obj[key];
-    if (v === undefined || v === null) return false;
-    if (typeof v === "string" && v.trim() === "") return false;
-    return true;
-  };
-
   const handleUpload = async () => {
     if (!file) return toast.error("❌ Please select a file first.");
     if (!validateFile(file)) return toast.error("❌ Only Excel files are allowed.");
@@ -66,17 +64,31 @@ const UploadPage = () => {
     formData.append("file", file);
 
     try {
-      const uploadUrl =
-        tableType === "checkstatus"
-          ? `${domain}/DataUpload`
-          : `${domain}/citizenID/upload`;
+      let uploadUrl = "";
+      let dbUrl = "";
+      let idKey = "StudentID";
 
-      const dbUrl =
-        tableType === "checkstatus"
-          ? `${domain}/students/all`
-          : `${domain}/citizenID/all`;
-
-      const idKey = "StudentID";
+      switch (tableType) {
+        case "checkstatus":
+          uploadUrl = `${domain}/DataUpload`;
+          dbUrl = `${domain}/students/all`;
+          break;
+        case "citizenid":
+          uploadUrl = `${domain}/citizenID/upload`;
+          dbUrl = `${domain}/citizenID/all`;
+          break;
+        case "englishscore":
+          uploadUrl = `${domain}/EnglishScore/upload`;
+          dbUrl = `${domain}/EnglishScore/all`;
+          break;
+        case "techscore":
+          uploadUrl = `${domain}/TechScore/upload`;
+          dbUrl = `${domain}/TechScore/all`;
+          break;
+        default:
+          uploadUrl = `${domain}/DataUpload`;
+          dbUrl = `${domain}/students/all`;
+      }
 
       const res = await axios.post(uploadUrl, formData, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -88,68 +100,54 @@ const UploadPage = () => {
       const dbMap = new Map(dbRows.map((r) => [r[idKey], r]));
       const dbColumns = dbRows.length > 0 ? Object.keys(dbRows[0]) : [];
 
-      // Preview: all DB rows
+      // Preview with status
       const previewWithStatus = dbRows.map((dbRow) => {
         const uploadRow = uploadRows.find((r) => r[idKey] === dbRow[idKey]);
         const mergedRow = {};
-
         dbColumns.forEach((col) => {
-          if (uploadRow) {
-            mergedRow[col] = uploadRow.hasOwnProperty(col) ? uploadRow[col] : dbRow[col];
-          } else {
-            mergedRow[col] = dbRow[col];
-          }
+          mergedRow[col] = uploadRow?.hasOwnProperty(col) ? uploadRow[col] : dbRow[col];
         });
 
         let _status = "";
         let _changedFields = "";
-
         if (uploadRow) {
-          const comparableCols = dbColumns.filter((col) => col !== idKey);
+          // Only compare columns that exist in the uploaded row
+          const comparableCols = dbColumns.filter(
+            (col) => col !== idKey && uploadRow.hasOwnProperty(col)
+          );
           const changedFields = comparableCols.filter((col) => {
             const dbVal = normalizeGeneral(dbRow[col]);
             const upVal = normalizeGeneral(uploadRow[col]);
-
-            if (col.toLowerCase().startsWith("stage")) return dbVal !== upVal;
-            if (col.toLowerCase() === "status") {
-              const nd = ["PASS", "FAIL"].includes(String(dbVal).toUpperCase())
-                ? String(dbVal).toUpperCase()
-                : null;
-              const nu = ["PASS", "FAIL"].includes(String(upVal).toUpperCase())
-                ? String(upVal).toUpperCase()
-                : null;
-              return nd !== nu;
-            }
-            if (col.toLowerCase() === "currentstatus") return dbVal !== upVal;
             return dbVal !== upVal;
           });
           _status = changedFields.length > 0 ? "updated" : "untouched";
           _changedFields = changedFields.join(", ");
         }
-
         return { ...mergedRow, _status, _changedFields };
       });
 
-      // Add new rows in upload not in DB
+      // New rows not in DB
       const newRows = uploadRows
         .filter((r) => !dbMap.has(r[idKey]))
         .map((r) => {
           const row = {};
           dbColumns.forEach((col) => (row[col] = r[col] ?? null));
 
-          // Check duplication by email + phone
           const email = normalizeGeneral(r.Email);
           const phone = normalizeGeneral(r.PhoneNumber);
-          const duplicate = dbRows.some(
-            (db) =>
-              normalizeGeneral(db.Email) === email &&
-              normalizeGeneral(db.PhoneNumber) === phone
-          );
+          const duplicate =
+            email && phone
+              ? dbRows.some(
+                  (db) =>
+                    normalizeGeneral(db.Email) === email &&
+                    normalizeGeneral(db.PhoneNumber) === phone
+                )
+              : false;
 
           return {
             ...row,
             _status: duplicate ? "duplication" : "new",
-            _changedFields: duplicate ? "" : "",
+            _changedFields: "",
           };
         });
 
@@ -173,10 +171,23 @@ const UploadPage = () => {
   const handleConfirm = async () => {
     setConfirming(true);
     try {
-      const confirmUrl =
-        tableType === "checkstatus"
-          ? `${domain}/DataUpload/confirmUpload`
-          : `${domain}/citizenID/upload/confirmUpload`;
+      let confirmUrl = "";
+      switch (tableType) {
+        case "checkstatus":
+          confirmUrl = `${domain}/DataUpload/confirmUpload`;
+          break;
+        case "citizenid":
+          confirmUrl = `${domain}/citizenID/upload/confirmUpload`;
+          break;
+        case "englishscore":
+          confirmUrl = `${domain}/EnglishScore/upload/confirmUpload`;
+          break;
+        case "techscore":
+          confirmUrl = `${domain}/TechScore/upload/confirmUpload`;
+          break;
+        default:
+          confirmUrl = `${domain}/DataUpload/confirmUpload`;
+      }
 
       await axios.post(confirmUrl, { confirm: true });
       toast.success("✅ Data successfully inserted/updated!", {
@@ -198,13 +209,12 @@ const UploadPage = () => {
     }
   };
 
+  // Table render & filtering
   const renderTable = (data, title, columns) => {
-    const hasRows = Array.isArray(data) && data.length > 0;
-
-    return (
-      <>
-        <h3 style={{ marginTop: "2rem" }}>{title}</h3>
-        {!hasRows ? (
+    if (!Array.isArray(data) || data.length === 0) {
+      return (
+        <>
+          <h3 style={{ marginTop: "2rem" }}>{title}</h3>
           <div
             style={{
               padding: "1rem",
@@ -216,180 +226,140 @@ const UploadPage = () => {
           >
             No rows match this filter.
           </div>
-        ) : (
-          <div
+        </>
+      );
+    }
+
+    return (
+      <>
+        <h3 style={{ marginTop: "2rem" }}>{title}</h3>
+        <div
+          style={{
+            overflowX: "auto",
+            maxHeight: "400px",
+            marginBottom: "1rem",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+            borderRadius: "8px",
+          }}
+        >
+          <table
             style={{
-              overflowX: "auto",
-              maxHeight: "400px",
-              marginBottom: "1rem",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-              borderRadius: "8px",
+              borderCollapse: "collapse",
+              width: "100%",
+              fontFamily: "Arial",
+              fontSize: "0.9rem",
+              color: "#333",
+              backgroundColor: "#fff",
+              border: "1px solid #ddd",
             }}
           >
-            <table
-              style={{
-                borderCollapse: "collapse",
-                width: "100%",
-                fontFamily: "Arial",
-                fontSize: "0.9rem",
-                color: "#333",
-                backgroundColor: "#fff",
-                border: "1px solid #ddd",
-              }}
-            >
-              <thead>
-                <tr
-                  style={{
-                    backgroundColor: "#f4f6f8",
-                    fontWeight: "bold",
-                    borderBottom: "2px solid #ddd",
-                  }}
-                >
-                  {columns.map((key, idx) => (
-                    <th key={idx} style={{ padding: "10px" }}>
-                      {key}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {data.map((row, i) => {
-                  const status = row._status;
-                  const bgColor =
-                    status === "new"
-                      ? "#e6ffe6"
-                      : status === "updated"
-                      ? "#fffbe6"
-                      : status === "duplication"
-                      ? "#ff4d4f"
-                      : "#f0f0f0";
-                  const changedFieldsList = String(row._changedFields || "")
-                    .split(",")
-                    .map((s) => s.trim().toLowerCase())
-                    .filter(Boolean);
+            <thead>
+              <tr
+                style={{
+                  backgroundColor: "#f4f6f8",
+                  fontWeight: "bold",
+                  borderBottom: "2px solid #ddd",
+                }}
+              >
+                {columns.map((key, idx) => (
+                  <th key={idx} style={{ padding: "10px" }}>
+                    {key}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {data.map((row, i) => {
+                const status = row._status;
+                const bgColor =
+                  status === "new"
+                    ? "#e6ffe6"
+                    : status === "updated"
+                    ? "#fffbe6"
+                    : status === "duplication"
+                    ? "#ff4d4f"
+                    : "#f0f0f0";
+                const changedFieldsList = String(row._changedFields || "")
+                  .split(",")
+                  .map((s) => s.trim().toLowerCase())
+                  .filter(Boolean);
 
-                  return (
-                    <tr
-                      key={i}
-                      style={{
-                        backgroundColor: bgColor,
-                        borderBottom: "1px solid #eee",
-                      }}
-                      onMouseEnter={(e) =>
-                        (e.currentTarget.style.backgroundColor = "#e6f7ff")
-                      }
-                      onMouseLeave={(e) =>
-                        (e.currentTarget.style.backgroundColor = bgColor)
-                      }
-                    >
-                      {columns.map((key, j) => {
-                        const isChanged =
-                          status === "updated" &&
-                          changedFieldsList.includes(key.toLowerCase());
-                        const isDuplication =
-                          status === "duplication" && key === "_changedFields";
-                        let value = row[key];
-                        let displayVal = value;
-                        const keyLower = key.toLowerCase();
+                return (
+                  <tr
+                    key={i}
+                    style={{
+                      backgroundColor: bgColor,
+                      borderBottom: "1px solid #eee",
+                    }}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.backgroundColor = "#e6f7ff")
+                    }
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.backgroundColor = bgColor)
+                    }
+                  >
+                    {columns.map((key, j) => {
+                      const isChanged =
+                        status === "updated" &&
+                        changedFieldsList.includes(key.toLowerCase());
+                      const isDuplication =
+                        status === "duplication" && key === "_changedFields";
+                      let value = row[key];
+                      let displayVal = value;
 
-                        if (keyLower === "currentstatus") {
-                          if (
-                            value === null ||
-                            value === undefined ||
-                            value === "" ||
-                            String(value).trim().toLowerCase() === "null"
-                          ) {
-                            displayVal = "-";
-                          } else if (String(value).trim() === "รอดำเนินการ") {
-                            displayVal = "⏳";
-                          } else {
-                            displayVal = String(value).trim();
-                          }
-                        }
+                      const cellStyle = {
+                        padding: "8px",
+                        textAlign: "center",
+                        backgroundColor: isChanged
+                          ? "#fff2cc"
+                          : isDuplication
+                          ? "#ff4d4f"
+                          : undefined,
+                        color: isDuplication ? "#fff" : undefined,
+                        fontWeight: isChanged || isDuplication ? "bold" : undefined,
+                        border: "1px solid #eee",
+                      };
 
-                        if (
-                          keyLower.startsWith("stage") &&
-                          keyLower !== "currentstatus"
-                        ) {
-                          if (
-                            value === 1 ||
-                            value === "1" ||
-                            String(value).trim() === "ผ่าน"
-                          )
-                            displayVal = "✅";
-                          else if (
-                            value === 0 ||
-                            value === "0" ||
-                            String(value).trim() === "ไม่ผ่าน"
-                          )
-                            displayVal = "❌";
-                          else if (String(value).trim() === "ติดเงื่อนไข")
-                            displayVal = "⚠️";
-                          else if (String(value).trim() === "รอดำเนินการ")
-                            displayVal = "⏳";
-                          else displayVal = "-";
-                        }
-
-                        const cellStyle = {
-                          padding: "8px",
-                          textAlign: "center",
-                          backgroundColor: isChanged
-                            ? "#fff2cc"
-                            : isDuplication
-                            ? "#ff4d4f"
-                            : undefined,
-                          color: isDuplication ? "#fff" : undefined,
-                          fontWeight: isChanged || isDuplication ? "bold" : undefined,
-                          border: "1px solid #eee",
-                        };
-
-                        return (
-                          <td key={j} style={cellStyle}>
-                            {key === "_status"
-                              ? status === "new"
-                                ? "🆕 New"
-                                : status === "updated"
-                                ? "✏️ Updated"
-                                : status === "duplication"
-                                ? "✖️ Duplication"
-                                : status === "untouched"
-                                ? "⚪ Untouched"
-                                : ""
-                              : key === "_changedFields"
-                              ? row[key] ?? "–"
-                              : displayVal ?? "–"}
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
+                      return (
+                        <td key={j} style={cellStyle}>
+                          {key === "_status"
+                            ? status === "new"
+                              ? "🆕 New"
+                              : status === "updated"
+                              ? "✏️ Updated"
+                              : status === "duplication"
+                              ? "❌ Duplication"
+                              : status === "untouched"
+                              ? "⚪ Untouched"
+                              : ""
+                            : key === "_changedFields"
+                            ? row[key] ?? "–"
+                            : displayVal ?? "–"}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </>
     );
   };
 
+  // Filtered & paginated data
   const filteredData = previewData.filter((row) => {
     if (searchTerm.trim()) {
       const lowerSearch = searchTerm.toLowerCase();
       const matchesSearch = Object.values(row).some((val) => {
         if (val == null) return false;
         const strVal = String(val).toLowerCase().trim();
-        if (
-          (lowerSearch === "male" || lowerSearch === "female") &&
-          strVal === lowerSearch
-        )
-          return true;
         return strVal.includes(lowerSearch);
       });
       if (!matchesSearch) return false;
     }
-
     if (statusFilter !== "all" && row._status !== statusFilter) return false;
-
     return true;
   });
 
@@ -413,11 +383,14 @@ const UploadPage = () => {
       }}
     >
       <h2>Upload CSV / Excel</h2>
+
       <div style={{ marginBottom: "1rem" }}>
         <label>Table: </label>
         <select value={tableType} onChange={(e) => setTableType(e.target.value)}>
           <option value="checkstatus">Check Status</option>
           <option value="citizenid">Citizen ID</option>
+          <option value="englishscore">English Score</option>
+          <option value="techscore">Tech Score</option>
         </select>
       </div>
 
@@ -443,39 +416,38 @@ const UploadPage = () => {
               }}
               style={{ padding: "6px", width: "250px" }}
             />
-            <div style={{ marginTop: "0.5rem", display: "flex", gap: "0.5rem" }}>
-              {["all", "new", "updated", "duplication", "untouched"].map(
-                (type) => (
-                  <button
-                    key={type}
-                    onClick={() => {
-                      setStatusFilter(type);
-                      setCurrentPage(1);
-                    }}
-                    style={{
-                      padding: "6px 12px",
-                      borderRadius: "6px",
-                      border: "1px solid #ccc",
-                      cursor: "pointer",
-                      background:
-                        statusFilter === type ? "#1890ff" : "#f0f0f0",
-                      color: statusFilter === type ? "#fff" : "#000",
-                      fontWeight: statusFilter === type ? "bold" : "normal",
-                    }}
-                  >
-                    {type === "all"
-                      ? "📋 All"
-                      : type === "new"
-                      ? "🆕 New"
-                      : type === "updated"
-                      ? "✏️ Updated"
-                      : type === "duplication"
-                      ? "❌ Duplication"
-                      : "⚪ Untouched"}
-                  </button>
-                )
-              )}
-            </div>
+          </div>
+
+          {/* Status Filter Buttons */}
+          <div style={{ marginTop: "0.5rem", display: "flex", gap: "0.5rem" }}>
+            {["all", "new", "updated", "duplication", "untouched"].map((type) => (
+              <button
+                key={type}
+                onClick={() => {
+                  setStatusFilter(type);
+                  setCurrentPage(1);
+                }}
+                style={{
+                  padding: "6px 12px",
+                  borderRadius: "6px",
+                  border: "1px solid #ccc",
+                  cursor: "pointer",
+                  background: statusFilter === type ? "#1890ff" : "#f0f0f0",
+                  color: statusFilter === type ? "#fff" : "#000",
+                  fontWeight: statusFilter === type ? "bold" : "normal",
+                }}
+              >
+                {type === "all"
+                  ? "📋 All"
+                  : type === "new"
+                  ? "🆕 New"
+                  : type === "updated"
+                  ? "✏️ Updated"
+                  : type === "duplication"
+                  ? "❌ Duplication"
+                  : "⚪ Untouched"}
+              </button>
+            ))}
           </div>
 
           {renderTable(
@@ -483,6 +455,7 @@ const UploadPage = () => {
             `📄 Uploaded File Preview (Page ${currentPageSafe} of ${totalPages})`,
             tableColumns
           )}
+
           <div
             style={{
               marginTop: "1rem",
@@ -524,3 +497,8 @@ const UploadPage = () => {
 };
 
 export default UploadPage;
+
+
+
+
+
