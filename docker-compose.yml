@@ -7,7 +7,7 @@ services:
     volumes:
       - ./frontend/dist:/usr/share/nginx/html
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
-      - ./certificates:/etc/nginx/ssl   # แมปโฟลเดอร์ ssl ที่เก็บ cert, key
+      - ./etc/letsencrypt:/etc/nginx/ssl   # แมปโฟลเดอร์ ssl ที่เก็บ cert, key
     ports:
       - "8443:443"  # เปิดพอร์ต HTTPS
     networks:
