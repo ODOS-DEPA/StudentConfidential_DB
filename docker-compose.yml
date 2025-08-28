@@ -18,6 +18,9 @@ services:
       context: .
       dockerfile: ./backend/Dockerfile
     container_name: backend-DB
+    
+    volumes:
+      - .env:/app/.env
     ports:
       - "12345:80"
     networks:

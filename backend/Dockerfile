@@ -5,7 +5,7 @@ FROM node:18-alpine
 WORKDIR /app
 
 # 3. คัดลอกไฟล์ .env จากโฟลเดอร์แม่ (../) เข้าไปไว้ที่ /app
-COPY ../.env .
+#COPY ../.env .
 
 # # 4. สร้างและเข้าไปยัง Working Directory ของ backend
 WORKDIR /app/backend
