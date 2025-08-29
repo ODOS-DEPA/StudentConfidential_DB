@@ -25,10 +25,23 @@ const EditPage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const url =
-          tableType === "checkstatus"
-            ? `${domain}/students/all`
-            : `${domain}/citizenID/all`;
+        let url = "";
+        switch (tableType) {
+          case "checkstatus":
+            url = `${domain}/students/all`;
+            break;
+          case "citizenid":
+            url = `${domain}/citizenID/all`;
+            break;
+          case "englishscore":
+            url = `${domain}/EnglishScore/all`;
+            break;
+          case "techscore":
+            url = `${domain}/TechScore/all`;
+            break;
+          default:
+            url = `${domain}/students/all`;
+        }
 
         const res = await axios.get(url);
         const rows = res.data?.rows || res.data || [];
@@ -41,7 +54,6 @@ const EditPage = () => {
     fetchData();
   }, [tableType, domain]);
 
-  // Handle Edit/Done per row
   const handleEdit = (id) => {
     setEditingRowId(id);
     setEditedRows((prev) => ({
@@ -66,7 +78,6 @@ const EditPage = () => {
     toast.info("✔ Row saved locally");
   };
 
-  // Transform row for upload
   const transformRowForDB = (row) => {
     const copy = { ...row };
     delete copy._status;
@@ -97,15 +108,30 @@ const EditPage = () => {
       const formData = new FormData();
       formData.append("file", blob, "editedRows.xlsx");
 
-      const uploadUrl =
-        tableType === "checkstatus"
-          ? `${domain}/DataUpload`
-          : `${domain}/citizenID/upload`;
+      let uploadUrl = "";
+      let confirmUrl = "";
 
-      const confirmUrl =
-        tableType === "checkstatus"
-          ? `${domain}/DataUpload/confirmUpload`
-          : `${domain}/citizenID/upload/confirmUpload`;
+      switch (tableType) {
+        case "checkstatus":
+          uploadUrl = `${domain}/DataUpload`;
+          confirmUrl = `${domain}/DataUpload/confirmUpload`;
+          break;
+        case "citizenid":
+          uploadUrl = `${domain}/citizenID/upload`;
+          confirmUrl = `${domain}/citizenID/upload/confirmUpload`;
+          break;
+        case "englishscore":
+          uploadUrl = `${domain}/EnglishScore/upload`;
+          confirmUrl = `${domain}/EnglishScore/upload/confirmUpload`;
+          break;
+        case "techscore":
+          uploadUrl = `${domain}/TechScore/upload`;
+          confirmUrl = `${domain}/TechScore/upload/confirmUpload`;
+          break;
+        default:
+          uploadUrl = `${domain}/DataUpload`;
+          confirmUrl = `${domain}/DataUpload/confirmUpload`;
+      }
 
       await axios.post(uploadUrl, formData);
       await axios.post(confirmUrl, { confirm: true });
@@ -113,11 +139,16 @@ const EditPage = () => {
       toast.success("✅ All changes saved to DB!");
       setEditedRows({});
 
-      const url =
+      // Refresh data
+      const res = await axios.get(
         tableType === "checkstatus"
           ? `${domain}/students/all`
-          : `${domain}/citizenID/all`;
-      const res = await axios.get(url);
+          : tableType === "citizenid"
+          ? `${domain}/citizenID/all`
+          : tableType === "englishscore"
+          ? `${domain}/EnglishScore/all`
+          : `${domain}/TechScore/all`
+      );
       setData(res.data?.rows || res.data || []);
     } catch (error) {
       console.error("Save all failed:", error.response?.data || error.message);
@@ -125,7 +156,6 @@ const EditPage = () => {
     }
   };
 
-  // Search filter
   const filteredData = data.filter((row) => {
     if (!searchTerm.trim()) return true;
     const lowerSearch = searchTerm.toLowerCase();
@@ -134,7 +164,6 @@ const EditPage = () => {
     );
   });
 
-  // Pagination
   const totalPages = Math.max(1, Math.ceil(filteredData.length / rowsPerPage));
   const currentPageSafe = Math.min(currentPage, totalPages);
   const indexOfLastRow = currentPageSafe * rowsPerPage;
@@ -156,9 +185,14 @@ const EditPage = () => {
 
       <div style={{ marginBottom: "1rem" }}>
         <label>Table: </label>
-        <select value={tableType} onChange={(e) => setTableType(e.target.value)}>
+        <select
+          value={tableType}
+          onChange={(e) => setTableType(e.target.value)}
+        >
           <option value="checkstatus">Check Status</option>
           <option value="citizenid">Citizen ID</option>
+          <option value="englishscore">English Score</option>
+          <option value="techscore">Tech Score</option>
         </select>
       </div>
 
@@ -231,7 +265,6 @@ const EditPage = () => {
                   style={{
                     backgroundColor: i % 2 === 0 ? "#fff" : "#f9f9f9",
                     borderBottom: "1px solid #eee",
-                    cursor: "pointer", // show pointer when hovering row
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = "#d7f5fcff";
@@ -335,7 +368,6 @@ const EditPage = () => {
         </div>
       )}
 
-      {/* Pagination */}
       <div
         style={{
           marginTop: "1rem",
@@ -384,6 +416,7 @@ const EditPage = () => {
 };
 
 export default EditPage;
+
 
 
 
